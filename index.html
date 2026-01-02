@@ -1,0 +1,256 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Matchplay Check-in & Score</title>
+  <style>
+    body { font-family: system-ui, Arial; margin: 16px; }
+    .card { max-width: 620px; margin: 0 auto; border: 1px solid #ddd; border-radius: 16px; padding: 16px; }
+    label { display:block; margin-top: 12px; font-weight: 700; }
+    input, select { width:100%; padding: 12px; font-size: 16px; margin-top: 6px; }
+    button { width:100%; padding: 16px; font-size: 18px; border-radius: 14px; border: 1px solid #ccc; background:#fff; }
+    button.primary { border-color:#000; }
+    .grid { display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 12px; }
+    .status { margin-top: 12px; padding: 10px; border-radius: 12px; background: #f6f6f6; white-space: pre-wrap; }
+    .tiny { opacity: .7; font-size: 12px; margin-top: 6px; }
+    .pill { display:inline-block; padding: 6px 10px; border:1px solid #eee; border-radius: 999px; background:#fafafa; margin-right:6px; }
+    .hidden { display:none; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Matchplay</h2>
+
+    <div>
+      <span class="pill" id="pillMatch">match: —</span>
+      <span class="pill" id="pillPid">pid: —</span>
+      <span class="pill" id="pillCheck">check-in: ✖</span>
+    </div>
+
+    <label>API URL</label>
+    <input id="apiUrl" value="https://script.google.com/macros/s/AKfycbxfAOIbs41bgE3onyoQiYqgswWGAsUoqEA5jsWPNvvAwoReX49LLeUvce3goD7YabzW/exec" />
+
+    <!-- Identity (komt uit link, maar editable voor debug) -->
+    <label>Match ID</label>
+    <input id="matchId" placeholder="M123" />
+
+    <label>Player ID (pid)</label>
+    <input id="playerId" placeholder="P8342" />
+
+    <label>Token (t)</label>
+    <input id="token" placeholder="(uit mail-link)" />
+
+    <!-- CHECK-IN -->
+    <div id="checkinBox">
+      <h3>Check-in</h3>
+      <label>QR Code ID</label>
+      <input id="qrCodeId" placeholder="bv. CLUBHOUSE-2026" value="CLUBHOUSE-2026" />
+      <button class="primary" onclick="doCheckin()">Scan/Check-in</button>
+      <div class="tiny">Nu nog handmatig QR Code ID. Scanner bouwen we als volgende stap.</div>
+    </div>
+
+    <!-- SCORING -->
+    <div id="scoreBox" class="hidden">
+      <h3>Score</h3>
+
+      <label>Hole</label>
+      <select id="holeNr"></select>
+
+      <label>Result (for you)</label>
+      <div class="grid">
+        <button class="primary" onclick="setResult('UP')">UP</button>
+        <button class="primary" onclick="setResult('DOWN')">DOWN</button>
+        <button class="primary" onclick="setResult('AS')">AS</button>
+      </div>
+
+      <button style="margin-top:12px" onclick="submitHole()">Submit</button>
+      <div class="tiny">GPS best-effort (timeout 5s). Als het niet lukt, sturen we alsnog.</div>
+    </div>
+
+    <div id="status" class="status">Status: open via de mail-link (?match=...&pid=...&t=...)</div>
+  </div>
+
+<script>
+  // init holes
+  const holeSelect = document.getElementById('holeNr');
+  for (let i=1; i<=18; i++) {
+    const opt = document.createElement('option');
+    opt.value = String(i);
+    opt.textContent = `Hole ${i}`;
+    holeSelect.appendChild(opt);
+  }
+
+  let currentResult = null;
+  let checkedIn = false;
+
+  function setStatus(msg) {
+    document.getElementById('status').textContent = `Status: ${msg}`;
+  }
+  function setResult(r) {
+    currentResult = r;
+    setStatus(`Result gekozen: ${r}`);
+  }
+  function getDeviceId() {
+    let id = localStorage.getItem('device_id');
+    if (!id) {
+      id = 'dev-' + Math.random().toString(16).slice(2) + '-' + Date.now();
+      localStorage.setItem('device_id', id);
+    }
+    return id;
+  }
+
+  function setPills() {
+    const matchId = document.getElementById('matchId').value.trim();
+    const pid = document.getElementById('playerId').value.trim();
+    document.getElementById('pillMatch').textContent = `match: ${matchId || '—'}`;
+    document.getElementById('pillPid').textContent = `pid: ${pid || '—'}`;
+    document.getElementById('pillCheck').textContent = `check-in: ${checkedIn ? '✔' : '✖'}`;
+  }
+
+  function applyUrlParams() {
+    const p = new URLSearchParams(location.search);
+    const match = p.get('match');
+    const pid = p.get('pid');
+    const t = p.get('t');
+
+    if (match) document.getElementById('matchId').value = match;
+    if (pid) document.getElementById('playerId').value = pid;
+    if (t) document.getElementById('token').value = t;
+
+    setPills();
+  }
+
+  function showScoringUI(on) {
+    document.getElementById('scoreBox').classList.toggle('hidden', !on);
+    document.getElementById('checkinBox').classList.toggle('hidden', on);
+  }
+
+  // GPS best-effort
+  function getGpsOnce({timeoutMs=5000, highAccuracy=false} = {}) {
+    return new Promise((resolve) => {
+      if (!navigator.geolocation) return resolve({ gps_status: 'no_geolocation' });
+
+      let done = false;
+      const timer = setTimeout(() => {
+        if (done) return;
+        done = true;
+        resolve({ gps_status: 'timeout' });
+      }, timeoutMs);
+
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          if (done) return;
+          done = true;
+          clearTimeout(timer);
+          resolve({
+            gps_status: 'ok',
+            lat: pos.coords.latitude,
+            lng: pos.coords.longitude,
+            accuracy_m: pos.coords.accuracy
+          });
+        },
+        (err) => {
+          if (done) return;
+          done = true;
+          clearTimeout(timer);
+          let status = 'error';
+          if (err && err.code === 1) status = 'denied';
+          if (err && err.code === 2) status = 'no_fix';
+          resolve({ gps_status: status });
+        },
+        { enableHighAccuracy: highAccuracy, maximumAge: 0 }
+      );
+    });
+  }
+
+  async function apiPost(payload) {
+    const apiUrl = document.getElementById('apiUrl').value.trim();
+    const res = await fetch(apiUrl, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    const text = await res.text();
+    let json = null;
+    try { json = JSON.parse(text); } catch {}
+    return { ok: res.ok, status: res.status, text, json };
+  }
+
+  // CHECK-IN
+  async function doCheckin() {
+    const matchId = document.getElementById('matchId').value.trim();
+    const pid = document.getElementById('playerId').value.trim();
+    const token = document.getElementById('token').value.trim();
+    const qrCodeId = document.getElementById('qrCodeId').value.trim();
+
+    if (!matchId || !pid || !token) return setStatus("Match ID, pid en token zijn verplicht.");
+    if (!qrCodeId) return setStatus("QR Code ID is verplicht.");
+
+    setStatus("GPS ophalen (check-in)...");
+    const gps = await getGpsOnce({ timeoutMs: 5000, highAccuracy: true });
+
+    setStatus(`Check-in sturen… (gps: ${gps.gps_status})`);
+    const payload = {
+      action: "checkin",
+      match_id: matchId,
+      player_id: pid,
+      token,
+      qr_code_id: qrCodeId,
+      device_id: getDeviceId(),
+      ...gps
+    };
+
+    const r = await apiPost(payload);
+    if (r.json && r.json.ok) {
+      checkedIn = true;
+      setPills();
+      showScoringUI(true);
+      if (navigator.vibrate) navigator.vibrate([80, 40, 80]);
+      setStatus("Check-in OK. Je kunt scores invoeren.");
+    } else {
+      setStatus(`Check-in fout (HTTP ${r.status})\n${r.text}`);
+    }
+  }
+
+  // SUBMIT HOLE
+  async function submitHole() {
+    if (!checkedIn) return setStatus("Eerst check-in.");
+
+    const matchId = document.getElementById('matchId').value.trim();
+    const pid = document.getElementById('playerId').value.trim();
+    const holeNr = Number(document.getElementById('holeNr').value);
+
+    if (!currentResult) return setStatus("Kies eerst UP / DOWN / AS.");
+
+    setStatus("GPS ophalen (hole)...");
+    const gps = await getGpsOnce({ timeoutMs: 5000, highAccuracy: false });
+
+    setStatus(`Versturen… (gps: ${gps.gps_status})`);
+    const payload = {
+      action: "submitEvent",
+      match_id: matchId,
+      player_id: pid,
+      event_type: "hole_submit",
+      source: "score_submit",
+      hole_nr: holeNr,
+      result: currentResult, // UP/DOWN/AS
+      device_id: getDeviceId(),
+      ...gps
+    };
+
+    const r = await apiPost(payload);
+    if (r.json && r.json.ok) {
+      if (navigator.vibrate) navigator.vibrate([60, 30, 60]);
+      setStatus(`Submit OK. event_id=${r.json.event_id}`);
+    } else {
+      setStatus(`Submit fout (HTTP ${r.status})\n${r.text}`);
+    }
+  }
+
+  // init
+  applyUrlParams();
+  showScoringUI(false);
+</script>
+</body>
+</html>
