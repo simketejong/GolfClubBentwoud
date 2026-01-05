@@ -20,8 +20,7 @@
     .tiny { opacity:.75; font-size: 12px; margin-top: 6px; }
     .hidden { display:none; }
     .grid3 { display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 12px; }
-    .danger { background:#ffecec; border-color:#ffb3b3; }
-    .ok { background:#ecffef; border-color:#a6f0b0; }
+    .danger { background:#ffecec; border:1px solid #ffb3b3; }
     video { width:100%; border-radius: 12px; border: 1px solid #ddd; margin-top: 10px; }
     .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
   </style>
@@ -37,8 +36,7 @@
       <span class="pill" id="pillCheck">check-in: ✖</span>
     </div>
 
-    <label>API URL</label>
-    <input id="apiUrl" placeholder="https://script.google.com/macros/s/.../exec" />
+    <div class="tiny mono" id="apiInfo">api: —</div>
 
     <div class="row">
       <div>
@@ -65,8 +63,8 @@
       </div>
       <video id="video" class="hidden" playsinline></video>
       <div class="tiny">
-        Als QR scanning niet werkt op jouw device: vul event code handmatig in.
-        <span class="mono">Chrome + HTTPS</span> is het fijnst.
+        Als QR scanning niet werkt: vul event code handmatig in.
+        <span class="mono">Chrome + HTTPS</span> werkt het best.
       </div>
     </div>
 
@@ -105,12 +103,10 @@
       <button class="wide" style="margin-top:12px;" onclick="submitHole()">Submit hole</button>
 
       <div id="confirmBox" class="hidden" style="margin-top:12px;">
-        <div class="status danger" id="confirmStatus">
-          Wacht op confirm…
-        </div>
+        <div class="status danger" id="confirmStatus">Wacht op confirm…</div>
         <button class="primary wide" onclick="confirmActive()">Confirm latest submit</button>
         <div class="tiny">
-          (Huidige backend gebruikt confirm-events. “Mismatch rood + automatisch akkoord” bouwen we als volgende stap.)
+          (Dit is het huidige model. Daarna bouwen we mismatch-rood + auto akkoord.)
         </div>
       </div>
 
@@ -123,12 +119,14 @@
       <div class="tiny" id="autoInfo">Auto refresh: uit</div>
     </div>
 
-    <div id="status" class="status">Status: open via mail-link (?match=...&pid=...&t=...)</div>
+    <div id="status" class="status">Status: open via mail-link</div>
   </div>
 
 <script>
-  // ----- init holes -----
+  // Filled from the mail link: ?api=.../exec
   let API_URL = "";
+
+  // ----- init holes -----
   const holeSelect = document.getElementById('holeNr');
   for (let i=1; i<=18; i++) {
     const opt = document.createElement('option');
@@ -142,7 +140,6 @@
   let lastSubmitEventId = null;
   let autoTimer = null;
 
-  // ----- UI helpers -----
   function setStatus(msg) {
     document.getElementById('status').textContent = `Status: ${msg}`;
   }
@@ -154,10 +151,10 @@
     document.getElementById('pillPid').textContent = `pid: ${pid || '—'}`;
     document.getElementById('pillEvent').textContent = `event: ${eventCode || '—'}`;
     document.getElementById('pillCheck').textContent = `check-in: ${checkedIn ? '✔' : '✖'}`;
+    document.getElementById('apiInfo').textContent = `api: ${API_URL || '—'}`;
   }
   function showScoringUI(on) {
     document.getElementById('scoreBox').classList.toggle('hidden', !on);
-    // keep eventBox visible (QR scan might be needed)
     document.getElementById('checkinBox').classList.toggle('hidden', on);
   }
   function setResult(r) {
@@ -176,14 +173,18 @@
   // ----- URL params -----
   function applyUrlParams() {
     const p = new URLSearchParams(location.search);
+
+    const api = p.get('api');
+    if (api) API_URL = api;
+
     const match = p.get('match');
     const pid = p.get('pid');
     const t = p.get('t');
-    const api = p.get('api');
-    if (api) API_URL = api;
+
     if (match) document.getElementById('matchId').value = match;
     if (pid) document.getElementById('playerId').value = pid;
     if (t) document.getElementById('token').value = t;
+
     setPills();
   }
 
@@ -227,10 +228,9 @@
 
   // ----- POST helper (NO CORS preflight) -----
   async function apiPost(payloadObj) {
-    const apiUrl = document.getElementById('apiUrl').value.trim();
-    if (!apiUrl) throw new Error('API URL ontbreekt');
     const apiUrl = API_URL;
-    if (!apiUrl) throw new Error("API URL ontbreekt in link (api=...)");
+    if (!apiUrl) throw new Error('API URL ontbreekt in link (api=...)');
+
     const data = new URLSearchParams();
     data.set('payload', JSON.stringify(payloadObj));
 
@@ -246,7 +246,6 @@
     return { ok: res.ok, status: res.status, text, json };
   }
 
-  // ----- GET helper -----
   async function apiGet(url) {
     const res = await fetch(url, { method: "GET" });
     const text = await res.text();
@@ -266,7 +265,6 @@
       if (!matchId || !pid) return setStatus("Match ID en Player ID zijn verplicht.");
       if (!eventCode) return setStatus("Event code is verplicht (scan QR of vul in).");
 
-      setPills();
       setStatus("GPS ophalen (check-in)...");
       const gps = await getGpsOnce({ timeoutMs: 5000, highAccuracy: true });
 
@@ -277,7 +275,7 @@
         event_code: eventCode,
         match_id: matchId,
         player_id: pid,
-        token, // mag leeg zijn; backend checken we later strakker
+        token, // later: echte token-check
         device_id: getDeviceId(),
         ...gps
       };
@@ -318,7 +316,7 @@
         event_type: "hole_submit",
         source: "score_submit",
         hole_nr: holeNr,
-        result: currentResult, // UP/DOWN/AS
+        result: currentResult,
         player_id: pid,
         confirmed: false,
         device_id: getDeviceId(),
@@ -330,7 +328,6 @@
         lastSubmitEventId = r.json.event_id;
         if (navigator.vibrate) navigator.vibrate([60, 30, 60]);
         setStatus(`Submit OK. event_id=${lastSubmitEventId}`);
-        // Show confirm box (current backend uses confirm events)
         document.getElementById('confirmBox').classList.remove('hidden');
         document.getElementById('confirmStatus').textContent =
           `Laat de andere speler confirm drukken (of jij, als jullie dat zo afspreken).\nActive submit event_id: ${lastSubmitEventId}`;
@@ -343,7 +340,7 @@
     }
   }
 
-  // ----- CONFIRM (matches your current backend model) -----
+  // ----- CONFIRM (current backend model) -----
   async function confirmActive() {
     try {
       const matchId = document.getElementById('matchId').value.trim();
@@ -358,7 +355,7 @@
         event_type: "hole_confirm",
         source: "confirm",
         hole_nr: holeNr,
-        result: "", // not used
+        result: "",
         player_id: pid,
         confirmed: true,
         confirm_of_event_id: lastSubmitEventId,
@@ -381,10 +378,8 @@
   // ----- MATCH STATE -----
   async function refreshState() {
     try {
-      const apiUrl = document.getElementById('apiUrl').value.trim();
-      const matchId = document.getElementById('matchId').value.trim();
       const apiUrl = API_URL;
-      if (!apiUrl) throw new Error("API URL ontbreekt in link (api=...)");
+      const matchId = document.getElementById('matchId').value.trim();
       if (!apiUrl || !matchId) return;
 
       const url = `${apiUrl}?action=matchState&match_id=${encodeURIComponent(matchId)}`;
@@ -398,7 +393,6 @@
       document.getElementById('scoreLabel').value = st.score?.label || '—';
       document.getElementById('scoreThru').value = String(st.score?.thru ?? '—');
 
-      // render holes compact
       const lines = [];
       for (const h of st.holes || []) {
         const a = h.active_submit ? `${h.active_submit.result} by ${h.active_submit.by}` : '—';
@@ -407,7 +401,6 @@
       }
       document.getElementById('holesBox').textContent = 'Holes:\n' + lines.join('\n');
 
-      // hide confirm box if hole is confirmed (best effort)
       const curHole = Number(document.getElementById('holeNr').value);
       const holeObj = (st.holes || []).find(x => x.hole === curHole);
       if (holeObj && holeObj.confirmed) {
@@ -432,19 +425,17 @@
     setStatus('Auto refresh aan.');
   }
 
-  // ----- QR scanning (BarcodeDetector if available) -----
+  // ----- QR scanning -----
   let stream = null;
   let scanTimer = null;
 
   function parseEventCodeFromQr(text) {
     const t = String(text || '').trim();
-    // Accept "event_code=MP2026" or "event=MP2026" or just "MP2026"
     try {
       const u = new URL(t);
       const p = new URLSearchParams(u.search);
       return p.get('event_code') || p.get('event') || t;
     } catch {
-      // not a URL
       const m = t.match(/(?:event_code|event)\s*=\s*([A-Za-z0-9_-]+)/i);
       if (m) return m[1];
       return t;
@@ -481,9 +472,7 @@
             setStatus(`QR OK: event_code=${eventCode}`);
             stopQrScan();
           }
-        } catch {
-          // ignore per frame
-        }
+        } catch {}
       }, 350);
 
       setStatus('QR scan gestart… richt camera op de QR.');
@@ -509,7 +498,6 @@
   showScoringUI(false);
   setPills();
 
-  // keep pills updated on input
   ['matchId','playerId','eventCode'].forEach(id => {
     document.getElementById(id).addEventListener('input', setPills);
   });
