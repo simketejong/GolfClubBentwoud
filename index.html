@@ -3,19 +3,27 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Matchplay Check-in & Score</title>
+  <title>Matchplay – Check-in & Scoring</title>
   <style>
     body { font-family: system-ui, Arial; margin: 16px; }
-    .card { max-width: 620px; margin: 0 auto; border: 1px solid #ddd; border-radius: 16px; padding: 16px; }
+    .card { max-width: 760px; margin: 0 auto; border: 1px solid #ddd; border-radius: 16px; padding: 16px; }
+    h2,h3 { margin: 8px 0; }
     label { display:block; margin-top: 12px; font-weight: 700; }
-    input, select { width:100%; padding: 12px; font-size: 16px; margin-top: 6px; }
-    button { width:100%; padding: 16px; font-size: 18px; border-radius: 14px; border: 1px solid #ccc; background:#fff; }
+    input, select { width:100%; padding: 12px; font-size: 16px; margin-top: 6px; box-sizing: border-box; }
+    button { padding: 14px 14px; font-size: 16px; border-radius: 12px; border: 1px solid #ccc; background:#fff; cursor:pointer; }
     button.primary { border-color:#000; }
-    .grid { display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 12px; }
+    button.wide { width:100%; }
+    .row { display:flex; gap: 10px; }
+    .row > * { flex: 1; }
+    .pill { display:inline-block; padding: 6px 10px; border:1px solid #eee; border-radius: 999px; background:#fafafa; margin: 6px 6px 0 0; }
     .status { margin-top: 12px; padding: 10px; border-radius: 12px; background: #f6f6f6; white-space: pre-wrap; }
-    .tiny { opacity: .7; font-size: 12px; margin-top: 6px; }
-    .pill { display:inline-block; padding: 6px 10px; border:1px solid #eee; border-radius: 999px; background:#fafafa; margin-right:6px; }
+    .tiny { opacity:.75; font-size: 12px; margin-top: 6px; }
     .hidden { display:none; }
+    .grid3 { display:grid; grid-template-columns: 1fr 1fr 1fr; gap: 10px; margin-top: 12px; }
+    .danger { background:#ffecec; border-color:#ffb3b3; }
+    .ok { background:#ecffef; border-color:#a6f0b0; }
+    video { width:100%; border-radius: 12px; border: 1px solid #ddd; margin-top: 10px; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
   </style>
 </head>
 <body>
@@ -25,54 +33,101 @@
     <div>
       <span class="pill" id="pillMatch">match: —</span>
       <span class="pill" id="pillPid">pid: —</span>
+      <span class="pill" id="pillEvent">event: —</span>
       <span class="pill" id="pillCheck">check-in: ✖</span>
     </div>
 
     <label>API URL</label>
-    <input id="apiUrl" value="https://script.google.com/macros/s/AKfycbxfAOIbs41bgE3onyoQiYqgswWGAsUoqEA5jsWPNvvAwoReX49LLeUvce3goD7YabzW/exec" />
+    <input id="apiUrl" placeholder="https://script.google.com/macros/s/.../exec" />
 
-    <!-- Identity (komt uit link, maar editable voor debug) -->
-    <label>Match ID</label>
-    <input id="matchId" placeholder="M123" />
-
-    <label>Player ID (pid)</label>
-    <input id="playerId" placeholder="P8342" />
+    <div class="row">
+      <div>
+        <label>Match ID</label>
+        <input id="matchId" placeholder="MP2026-R1-M01" />
+      </div>
+      <div>
+        <label>Player ID</label>
+        <input id="playerId" placeholder="P001" />
+      </div>
+    </div>
 
     <label>Token (t)</label>
     <input id="token" placeholder="(uit mail-link)" />
 
-    <!-- CHECK-IN -->
-    <div id="checkinBox">
-      <h3>Check-in</h3>
-      <label>QR Code ID</label>
-      <input id="qrCodeId" placeholder="bv. CLUBHOUSE-2026" value="CLUBHOUSE-2026" />
-      <button class="primary" onclick="doCheckin()">Scan/Check-in</button>
-      <div class="tiny">Nu nog handmatig QR Code ID. Scanner bouwen we als volgende stap.</div>
+    <!-- EVENT QR / EVENT CODE -->
+    <div id="eventBox">
+      <h3 style="margin-top:16px;">Event (QR)</h3>
+      <label>Event code</label>
+      <input id="eventCode" placeholder="MP2026" />
+      <div class="row" style="margin-top:10px;">
+        <button onclick="startQrScan()">Scan QR</button>
+        <button onclick="stopQrScan()">Stop scan</button>
+      </div>
+      <video id="video" class="hidden" playsinline></video>
+      <div class="tiny">
+        Als QR scanning niet werkt op jouw device: vul event code handmatig in.
+        <span class="mono">Chrome + HTTPS</span> is het fijnst.
+      </div>
     </div>
 
-    <!-- SCORING -->
+    <!-- CHECK-IN -->
+    <div id="checkinBox">
+      <h3 style="margin-top:16px;">Check-in</h3>
+      <button class="primary wide" onclick="doCheckin()">Check-in (met GPS)</button>
+      <div class="tiny">GPS is best-effort (timeout 5s). Als het niet lukt sturen we alsnog.</div>
+    </div>
+
+    <!-- SCORE -->
     <div id="scoreBox" class="hidden">
-      <h3>Score</h3>
+      <h3 style="margin-top:16px;">Live score</h3>
+
+      <div class="row">
+        <div>
+          <label>Huidige stand</label>
+          <input id="scoreLabel" readonly value="—" />
+        </div>
+        <div>
+          <label>Thru</label>
+          <input id="scoreThru" readonly value="—" />
+        </div>
+      </div>
 
       <label>Hole</label>
       <select id="holeNr"></select>
 
-      <label>Result (for you)</label>
-      <div class="grid">
+      <label>Result (jouw POV)</label>
+      <div class="grid3">
         <button class="primary" onclick="setResult('UP')">UP</button>
         <button class="primary" onclick="setResult('DOWN')">DOWN</button>
         <button class="primary" onclick="setResult('AS')">AS</button>
       </div>
 
-      <button style="margin-top:12px" onclick="submitHole()">Submit</button>
-      <div class="tiny">GPS best-effort (timeout 5s). Als het niet lukt, sturen we alsnog.</div>
+      <button class="wide" style="margin-top:12px;" onclick="submitHole()">Submit hole</button>
+
+      <div id="confirmBox" class="hidden" style="margin-top:12px;">
+        <div class="status danger" id="confirmStatus">
+          Wacht op confirm…
+        </div>
+        <button class="primary wide" onclick="confirmActive()">Confirm latest submit</button>
+        <div class="tiny">
+          (Huidige backend gebruikt confirm-events. “Mismatch rood + automatisch akkoord” bouwen we als volgende stap.)
+        </div>
+      </div>
+
+      <div id="holesBox" class="status" style="margin-top:12px;">Holes: —</div>
+
+      <div class="row" style="margin-top:12px;">
+        <button onclick="refreshState()">Refresh</button>
+        <button onclick="toggleAutoRefresh()">Auto refresh</button>
+      </div>
+      <div class="tiny" id="autoInfo">Auto refresh: uit</div>
     </div>
 
-    <div id="status" class="status">Status: open via de mail-link (?match=...&pid=...&t=...)</div>
+    <div id="status" class="status">Status: open via mail-link (?match=...&pid=...&t=...)</div>
   </div>
 
 <script>
-  // init holes
+  // ----- init holes -----
   const holeSelect = document.getElementById('holeNr');
   for (let i=1; i<=18; i++) {
     const opt = document.createElement('option');
@@ -83,9 +138,26 @@
 
   let currentResult = null;
   let checkedIn = false;
+  let lastSubmitEventId = null;
+  let autoTimer = null;
 
+  // ----- UI helpers -----
   function setStatus(msg) {
     document.getElementById('status').textContent = `Status: ${msg}`;
+  }
+  function setPills() {
+    const matchId = document.getElementById('matchId').value.trim();
+    const pid = document.getElementById('playerId').value.trim();
+    const eventCode = document.getElementById('eventCode').value.trim();
+    document.getElementById('pillMatch').textContent = `match: ${matchId || '—'}`;
+    document.getElementById('pillPid').textContent = `pid: ${pid || '—'}`;
+    document.getElementById('pillEvent').textContent = `event: ${eventCode || '—'}`;
+    document.getElementById('pillCheck').textContent = `check-in: ${checkedIn ? '✔' : '✖'}`;
+  }
+  function showScoringUI(on) {
+    document.getElementById('scoreBox').classList.toggle('hidden', !on);
+    // keep eventBox visible (QR scan might be needed)
+    document.getElementById('checkinBox').classList.toggle('hidden', on);
   }
   function setResult(r) {
     currentResult = r;
@@ -100,33 +172,19 @@
     return id;
   }
 
-  function setPills() {
-    const matchId = document.getElementById('matchId').value.trim();
-    const pid = document.getElementById('playerId').value.trim();
-    document.getElementById('pillMatch').textContent = `match: ${matchId || '—'}`;
-    document.getElementById('pillPid').textContent = `pid: ${pid || '—'}`;
-    document.getElementById('pillCheck').textContent = `check-in: ${checkedIn ? '✔' : '✖'}`;
-  }
-
+  // ----- URL params -----
   function applyUrlParams() {
     const p = new URLSearchParams(location.search);
     const match = p.get('match');
     const pid = p.get('pid');
     const t = p.get('t');
-
     if (match) document.getElementById('matchId').value = match;
     if (pid) document.getElementById('playerId').value = pid;
     if (t) document.getElementById('token').value = t;
-
     setPills();
   }
 
-  function showScoringUI(on) {
-    document.getElementById('scoreBox').classList.toggle('hidden', !on);
-    document.getElementById('checkinBox').classList.toggle('hidden', on);
-  }
-
-  // GPS best-effort
+  // ----- GPS (best-effort) -----
   function getGpsOnce({timeoutMs=5000, highAccuracy=false} = {}) {
     return new Promise((resolve) => {
       if (!navigator.geolocation) return resolve({ gps_status: 'no_geolocation' });
@@ -164,93 +222,291 @@
     });
   }
 
-  async function apiPost(payload) {
+  // ----- POST helper (NO CORS preflight) -----
+  async function apiPost(payloadObj) {
     const apiUrl = document.getElementById('apiUrl').value.trim();
+    if (!apiUrl) throw new Error('API URL ontbreekt');
+
+    const data = new URLSearchParams();
+    data.set('payload', JSON.stringify(payloadObj));
+
     const res = await fetch(apiUrl, {
       method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload)
+      headers: { "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8" },
+      body: data.toString()
     });
+
     const text = await res.text();
     let json = null;
     try { json = JSON.parse(text); } catch {}
     return { ok: res.ok, status: res.status, text, json };
   }
 
-  // CHECK-IN
+  // ----- GET helper -----
+  async function apiGet(url) {
+    const res = await fetch(url, { method: "GET" });
+    const text = await res.text();
+    let json = null;
+    try { json = JSON.parse(text); } catch {}
+    return { ok: res.ok, status: res.status, text, json };
+  }
+
+  // ----- CHECK-IN -----
   async function doCheckin() {
-    const matchId = document.getElementById('matchId').value.trim();
-    const pid = document.getElementById('playerId').value.trim();
-    const token = document.getElementById('token').value.trim();
-    const qrCodeId = document.getElementById('qrCodeId').value.trim();
+    try {
+      const matchId = document.getElementById('matchId').value.trim();
+      const pid = document.getElementById('playerId').value.trim();
+      const token = document.getElementById('token').value.trim();
+      const eventCode = document.getElementById('eventCode').value.trim();
 
-    if (!matchId || !pid || !token) return setStatus("Match ID, pid en token zijn verplicht.");
-    if (!qrCodeId) return setStatus("QR Code ID is verplicht.");
+      if (!matchId || !pid) return setStatus("Match ID en Player ID zijn verplicht.");
+      if (!eventCode) return setStatus("Event code is verplicht (scan QR of vul in).");
 
-    setStatus("GPS ophalen (check-in)...");
-    const gps = await getGpsOnce({ timeoutMs: 5000, highAccuracy: true });
-
-    setStatus(`Check-in sturen… (gps: ${gps.gps_status})`);
-    const payload = {
-      action: "checkin",
-      match_id: matchId,
-      player_id: pid,
-      token,
-      qr_code_id: qrCodeId,
-      device_id: getDeviceId(),
-      ...gps
-    };
-
-    const r = await apiPost(payload);
-    if (r.json && r.json.ok) {
-      checkedIn = true;
       setPills();
-      showScoringUI(true);
-      if (navigator.vibrate) navigator.vibrate([80, 40, 80]);
-      setStatus("Check-in OK. Je kunt scores invoeren.");
-    } else {
-      setStatus(`Check-in fout (HTTP ${r.status})\n${r.text}`);
+      setStatus("GPS ophalen (check-in)...");
+      const gps = await getGpsOnce({ timeoutMs: 5000, highAccuracy: true });
+
+      setStatus(`Check-in sturen… (gps: ${gps.gps_status})`);
+
+      const payload = {
+        action: "checkin",
+        event_code: eventCode,
+        match_id: matchId,
+        player_id: pid,
+        token, // mag leeg zijn; backend checken we later strakker
+        device_id: getDeviceId(),
+        ...gps
+      };
+
+      const r = await apiPost(payload);
+      if (r.json && r.json.ok) {
+        checkedIn = true;
+        setPills();
+        showScoringUI(true);
+        if (navigator.vibrate) navigator.vibrate([80, 40, 80]);
+        setStatus("Check-in OK. Score invoer actief.");
+        await refreshState();
+      } else {
+        setStatus(`Check-in fout (HTTP ${r.status})\n${r.text}`);
+      }
+    } catch (e) {
+      setStatus('Fout: ' + (e?.message || e));
     }
   }
 
-  // SUBMIT HOLE
+  // ----- SUBMIT HOLE -----
   async function submitHole() {
-    if (!checkedIn) return setStatus("Eerst check-in.");
+    try {
+      if (!checkedIn) return setStatus("Eerst check-in.");
 
-    const matchId = document.getElementById('matchId').value.trim();
-    const pid = document.getElementById('playerId').value.trim();
-    const holeNr = Number(document.getElementById('holeNr').value);
+      const matchId = document.getElementById('matchId').value.trim();
+      const pid = document.getElementById('playerId').value.trim();
+      const holeNr = Number(document.getElementById('holeNr').value);
+      if (!currentResult) return setStatus("Kies eerst UP / DOWN / AS.");
 
-    if (!currentResult) return setStatus("Kies eerst UP / DOWN / AS.");
+      setStatus("GPS ophalen (hole)...");
+      const gps = await getGpsOnce({ timeoutMs: 5000, highAccuracy: false });
 
-    setStatus("GPS ophalen (hole)...");
-    const gps = await getGpsOnce({ timeoutMs: 5000, highAccuracy: false });
+      setStatus(`Submit sturen… (gps: ${gps.gps_status})`);
+      const payload = {
+        action: "submitEvent",
+        match_id: matchId,
+        event_type: "hole_submit",
+        source: "score_submit",
+        hole_nr: holeNr,
+        result: currentResult, // UP/DOWN/AS
+        player_id: pid,
+        confirmed: false,
+        device_id: getDeviceId(),
+        ...gps
+      };
 
-    setStatus(`Versturen… (gps: ${gps.gps_status})`);
-    const payload = {
-      action: "submitEvent",
-      match_id: matchId,
-      player_id: pid,
-      event_type: "hole_submit",
-      source: "score_submit",
-      hole_nr: holeNr,
-      result: currentResult, // UP/DOWN/AS
-      device_id: getDeviceId(),
-      ...gps
-    };
-
-    const r = await apiPost(payload);
-    if (r.json && r.json.ok) {
-      if (navigator.vibrate) navigator.vibrate([60, 30, 60]);
-      setStatus(`Submit OK. event_id=${r.json.event_id}`);
-    } else {
-      setStatus(`Submit fout (HTTP ${r.status})\n${r.text}`);
+      const r = await apiPost(payload);
+      if (r.json && r.json.ok) {
+        lastSubmitEventId = r.json.event_id;
+        if (navigator.vibrate) navigator.vibrate([60, 30, 60]);
+        setStatus(`Submit OK. event_id=${lastSubmitEventId}`);
+        // Show confirm box (current backend uses confirm events)
+        document.getElementById('confirmBox').classList.remove('hidden');
+        document.getElementById('confirmStatus').textContent =
+          `Laat de andere speler confirm drukken (of jij, als jullie dat zo afspreken).\nActive submit event_id: ${lastSubmitEventId}`;
+        await refreshState();
+      } else {
+        setStatus(`Submit fout (HTTP ${r.status})\n${r.text}`);
+      }
+    } catch (e) {
+      setStatus('Fout: ' + (e?.message || e));
     }
   }
 
-  // init
+  // ----- CONFIRM (matches your current backend model) -----
+  async function confirmActive() {
+    try {
+      const matchId = document.getElementById('matchId').value.trim();
+      const pid = document.getElementById('playerId').value.trim();
+      const holeNr = Number(document.getElementById('holeNr').value);
+
+      if (!lastSubmitEventId) return setStatus("Geen active submit om te confirmen (eerst submit).");
+
+      const payload = {
+        action: "submitEvent",
+        match_id: matchId,
+        event_type: "hole_confirm",
+        source: "confirm",
+        hole_nr: holeNr,
+        result: "", // not used
+        player_id: pid,
+        confirmed: true,
+        confirm_of_event_id: lastSubmitEventId,
+        device_id: getDeviceId()
+      };
+
+      const r = await apiPost(payload);
+      if (r.json && r.json.ok) {
+        if (navigator.vibrate) navigator.vibrate([40, 20, 40]);
+        setStatus(`Confirm OK. event_id=${r.json.event_id}`);
+        await refreshState();
+      } else {
+        setStatus(`Confirm fout (HTTP ${r.status})\n${r.text}`);
+      }
+    } catch (e) {
+      setStatus('Fout: ' + (e?.message || e));
+    }
+  }
+
+  // ----- MATCH STATE -----
+  async function refreshState() {
+    try {
+      const apiUrl = document.getElementById('apiUrl').value.trim();
+      const matchId = document.getElementById('matchId').value.trim();
+      if (!apiUrl || !matchId) return;
+
+      const url = `${apiUrl}?action=matchState&match_id=${encodeURIComponent(matchId)}`;
+      const r = await apiGet(url);
+      if (!(r.json && r.json.ok)) {
+        document.getElementById('holesBox').textContent = `Holes: (geen state)\n${r.text}`;
+        return;
+      }
+
+      const st = r.json;
+      document.getElementById('scoreLabel').value = st.score?.label || '—';
+      document.getElementById('scoreThru').value = String(st.score?.thru ?? '—');
+
+      // render holes compact
+      const lines = [];
+      for (const h of st.holes || []) {
+        const a = h.active_submit ? `${h.active_submit.result} by ${h.active_submit.by}` : '—';
+        const c = h.confirmed ? '✅' : (h.pending_confirm ? '⏳' : '—');
+        lines.push(`H${String(h.hole).padStart(2,'0')}: ${c}  ${a}`);
+      }
+      document.getElementById('holesBox').textContent = 'Holes:\n' + lines.join('\n');
+
+      // hide confirm box if hole is confirmed (best effort)
+      const curHole = Number(document.getElementById('holeNr').value);
+      const holeObj = (st.holes || []).find(x => x.hole === curHole);
+      if (holeObj && holeObj.confirmed) {
+        document.getElementById('confirmBox').classList.add('hidden');
+        lastSubmitEventId = null;
+      }
+    } catch (e) {
+      setStatus('Fout: ' + (e?.message || e));
+    }
+  }
+
+  function toggleAutoRefresh() {
+    if (autoTimer) {
+      clearInterval(autoTimer);
+      autoTimer = null;
+      document.getElementById('autoInfo').textContent = 'Auto refresh: uit';
+      setStatus('Auto refresh uit.');
+      return;
+    }
+    autoTimer = setInterval(refreshState, 5000);
+    document.getElementById('autoInfo').textContent = 'Auto refresh: aan (5s)';
+    setStatus('Auto refresh aan.');
+  }
+
+  // ----- QR scanning (BarcodeDetector if available) -----
+  let stream = null;
+  let scanTimer = null;
+
+  function parseEventCodeFromQr(text) {
+    const t = String(text || '').trim();
+    // Accept "event_code=MP2026" or "event=MP2026" or just "MP2026"
+    try {
+      const u = new URL(t);
+      const p = new URLSearchParams(u.search);
+      return p.get('event_code') || p.get('event') || t;
+    } catch {
+      // not a URL
+      const m = t.match(/(?:event_code|event)\s*=\s*([A-Za-z0-9_-]+)/i);
+      if (m) return m[1];
+      return t;
+    }
+  }
+
+  async function startQrScan() {
+    const video = document.getElementById('video');
+    if (!navigator.mediaDevices?.getUserMedia) {
+      setStatus('Camera niet beschikbaar op dit device.');
+      return;
+    }
+    if (!('BarcodeDetector' in window)) {
+      setStatus('BarcodeDetector ontbreekt. Gebruik Chrome (nieuw) of vul event code handmatig in.');
+      return;
+    }
+
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' }, audio: false });
+      video.srcObject = stream;
+      video.classList.remove('hidden');
+      await video.play();
+
+      const detector = new BarcodeDetector({ formats: ['qr_code'] });
+
+      scanTimer = setInterval(async () => {
+        try {
+          const barcodes = await detector.detect(video);
+          if (barcodes && barcodes.length) {
+            const raw = barcodes[0].rawValue || '';
+            const eventCode = parseEventCodeFromQr(raw);
+            document.getElementById('eventCode').value = eventCode;
+            setPills();
+            setStatus(`QR OK: event_code=${eventCode}`);
+            stopQrScan();
+          }
+        } catch {
+          // ignore per frame
+        }
+      }, 350);
+
+      setStatus('QR scan gestart… richt camera op de QR.');
+    } catch (e) {
+      setStatus('Camera fout: ' + (e?.message || e));
+    }
+  }
+
+  function stopQrScan() {
+    const video = document.getElementById('video');
+    if (scanTimer) { clearInterval(scanTimer); scanTimer = null; }
+    if (stream) {
+      stream.getTracks().forEach(t => t.stop());
+      stream = null;
+    }
+    video.pause();
+    video.srcObject = null;
+    video.classList.add('hidden');
+  }
+
+  // ----- init -----
   applyUrlParams();
   showScoringUI(false);
+  setPills();
+
+  // keep pills updated on input
+  ['matchId','playerId','eventCode'].forEach(id => {
+    document.getElementById(id).addEventListener('input', setPills);
+  });
 </script>
 </body>
 </html>
