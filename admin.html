@@ -1,0 +1,125 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Matchplay Admin – R1 setup</title>
+  <style>
+    body { font-family: system-ui, Arial; margin: 16px; }
+    .card { max-width: 820px; margin: 0 auto; border: 1px solid #ddd; border-radius: 16px; padding: 16px; }
+    label { display:block; margin-top: 12px; font-weight: 700; }
+    input { width:100%; padding: 12px; font-size: 16px; margin-top: 6px; }
+    button { padding: 12px 14px; font-size: 16px; border-radius: 12px; border: 1px solid #ccc; background:#fff; }
+    button.primary { border-color:#000; }
+    .row { display:flex; gap: 10px; }
+    .row > * { flex: 1; }
+    table { width:100%; border-collapse: collapse; margin-top: 12px; }
+    th, td { border-bottom: 1px solid #eee; padding: 10px; text-align:left; }
+    .status { margin-top: 12px; padding: 10px; border-radius: 12px; background: #f6f6f6; white-space: pre-wrap; }
+    .small { opacity:.75; font-size: 12px; }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Matchplay Admin – R1 setup</h2>
+    <div class="small">Vul matches in (email A vs email B). Klik “Send R1 mails”.</div>
+
+    <label>Apps Script API URL</label>
+    <input id="apiUrl" placeholder="https://script.google.com/macros/s/.../exec" />
+
+    <div class="row">
+      <div>
+        <label>Event code (kort)</label>
+        <input id="eventCode" value="MP2026" />
+      </div>
+      <div>
+        <label>Admin key</label>
+        <input id="adminKey" placeholder="(uit Google Sheet config)" />
+      </div>
+    </div>
+
+    <div style="margin-top:12px" class="row">
+      <button onclick="addRow()">+ Add match</button>
+      <button class="primary" onclick="sendR1()">Send R1 mails</button>
+    </div>
+
+    <table id="tbl">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Email speler A</th>
+          <th>Email speler B</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+
+    <div id="status" class="status">Status: klaar.</div>
+  </div>
+
+<script>
+  const tbody = document.querySelector('#tbl tbody');
+
+  function setStatus(msg) {
+    document.getElementById('status').textContent = 'Status: ' + msg;
+  }
+
+  function addRow(a='', b='') {
+    const tr = document.createElement('tr');
+    const idx = tbody.children.length + 1;
+    tr.innerHTML = `
+      <td>${idx}</td>
+      <td><input type="email" placeholder="a@club.nl" value="${a}" /></td>
+      <td><input type="email" placeholder="b@club.nl" value="${b}" /></td>
+      <td><button onclick="this.closest('tr').remove(); renumber();">Remove</button></td>
+    `;
+    tbody.appendChild(tr);
+  }
+
+  function renumber() {
+    [...tbody.children].forEach((tr,i) => tr.children[0].textContent = String(i+1));
+  }
+
+  async function sendR1() {
+    const apiUrl = document.getElementById('apiUrl').value.trim();
+    const eventCode = document.getElementById('eventCode').value.trim();
+    const adminKey = document.getElementById('adminKey').value.trim();
+
+    if (!apiUrl) return setStatus('API URL ontbreekt.');
+    if (!eventCode) return setStatus('Event code ontbreekt.');
+    if (!adminKey) return setStatus('Admin key ontbreekt.');
+
+    const pairs = [];
+    [...tbody.children].forEach(tr => {
+      const emailA = tr.children[1].querySelector('input').value.trim();
+      const emailB = tr.children[2].querySelector('input').value.trim();
+      if (emailA && emailB) pairs.push({ email_a: emailA, email_b: emailB });
+    });
+
+    if (pairs.length < 1) return setStatus('Geen matches ingevuld.');
+
+    setStatus('Versturen… (dit kan even duren)');
+    try {
+      const res = await fetch(apiUrl, {
+        method: 'POST',
+        headers: { 'Content-Type':'application/json' },
+        body: JSON.stringify({
+          action: 'adminSetupR1',
+          admin_key: adminKey,
+          event_code: eventCode,
+          pairs
+        })
+      });
+      const text = await res.text();
+      setStatus(`Response (HTTP ${res.status}):\n${text}`);
+    } catch (e) {
+      setStatus('Fout: ' + (e?.message || e));
+    }
+  }
+
+  // start with 4 rows
+  addRow(); addRow(); addRow(); addRow();
+</script>
+</body>
+</html>
