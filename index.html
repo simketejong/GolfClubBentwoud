@@ -511,7 +511,15 @@
     }
 
     const st = r.json;
-    $('scoreLabel').textContent = st.score?.label || '—';
+const net = Number(st.score?.net ?? 0);
+const pid = $('playerId').value.trim();
+const isA = pid === st.match?.player_a;
+
+// POV-net: speler B ziet teken omgedraaid
+const povNet = isA ? net : -net;
+const povLabel = (povNet === 0) ? 'All Square' : (povNet > 0 ? `${povNet} Up` : `${Math.abs(povNet)} Down`);
+
+$('scoreLabel').textContent = povLabel;
     $('scoreThru').textContent  = String(st.score?.thru ?? '—');
 
     // get current hole state
