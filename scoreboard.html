@@ -1,0 +1,259 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Matchplay – Live Scoreboard</title>
+  <style>
+    body { font-family: system-ui, Arial; margin: 16px; background:#fff; }
+    .top { max-width: 1200px; margin: 0 auto; display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; }
+    .card { max-width: 1200px; margin: 12px auto 0; border: 1px solid #ddd; border-radius: 16px; padding: 16px; }
+    label { display:block; font-weight: 700; }
+    input { padding: 10px; font-size: 16px; width: 260px; }
+    button { padding: 10px 12px; font-size: 16px; border-radius: 12px; border: 1px solid #ccc; background:#fff; cursor:pointer; }
+    .pill { display:inline-block; padding:6px 10px; border:1px solid #eee; border-radius:999px; background:#fafafa; margin-right:6px; }
+    table { width:100%; border-collapse: collapse; }
+    th, td { border-bottom: 1px solid #eee; padding: 10px; text-align:left; }
+    th { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; opacity:.7; }
+    .right { text-align:right; }
+    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+    .small { font-size: 12px; opacity:.75; }
+    .live { font-weight: 800; }
+    .done { font-weight: 800; }
+    .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
+    .nameEdit { width: 180px; }
+  </style>
+</head>
+<body>
+
+  <div class="top">
+    <div>
+      <label>API (uit mail-link)</label>
+      <input id="api" placeholder=".../exec" />
+    </div>
+    <div>
+      <label>Event</label>
+      <input id="event" placeholder="MP2026" />
+    </div>
+    <div>
+      <label>Round</label>
+      <input id="round" placeholder="R1" />
+    </div>
+    <div>
+      <label>Refresh (sec)</label>
+      <input id="refresh" placeholder="5" />
+    </div>
+    <div class="row">
+      <button onclick="reloadNow()">Reload</button>
+      <button onclick="toggleAuto()">Auto</button>
+    </div>
+    <div class="row small">
+      <span class="pill" id="pStatus">status: —</span>
+      <span class="pill mono" id="pUpdated">updated: —</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2 style="margin:0 0 8px 0;">Live Scoreboard</h2>
+    <div class="small">
+      Roepnamen zijn <b>client-only</b> (localStorage). Je kan ze hier aanpassen zonder iets naar de cloud te sturen.
+    </div>
+
+    <table>
+      <thead>
+        <tr>
+          <th>Match</th>
+          <th>Speler A</th>
+          <th>Speler B</th>
+          <th>Stand</th>
+          <th>Thru</th>
+          <th>Status</th>
+          <th>Winner</th>
+          <th class="right">Alias aanpassen</th>
+        </tr>
+      </thead>
+      <tbody id="tbody">
+        <tr><td colspan="8">Nog geen data…</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+<script>
+  let timer = null;
+
+  function qs() { return new URLSearchParams(location.search); }
+
+  function loadParams() {
+    const p = qs();
+    const api = p.get('api') || localStorage.getItem('sb_api') || '';
+    const event = p.get('event_code') || localStorage.getItem('sb_event') || '';
+    const round = p.get('round') || localStorage.getItem('sb_round') || 'R1';
+    const refresh = p.get('refresh') || localStorage.getItem('sb_refresh') || '5';
+
+    apiEl().value = api;
+    eventEl().value = event;
+    roundEl().value = round;
+    refreshEl().value = refresh;
+
+    saveTop();
+  }
+
+  function saveTop() {
+    localStorage.setItem('sb_api', apiEl().value.trim());
+    localStorage.setItem('sb_event', eventEl().value.trim());
+    localStorage.setItem('sb_round', roundEl().value.trim());
+    localStorage.setItem('sb_refresh', refreshEl().value.trim());
+  }
+
+  function apiEl(){ return document.getElementById('api'); }
+  function eventEl(){ return document.getElementById('event'); }
+  function roundEl(){ return document.getElementById('round'); }
+  function refreshEl(){ return document.getElementById('refresh'); }
+
+  function setStatus(msg){ document.getElementById('pStatus').textContent = 'status: ' + msg; }
+  function setUpdated(){ document.getElementById('pUpdated').textContent = 'updated: ' + new Date().toLocaleTimeString(); }
+
+  function aliasKey(pid){ return 'alias_' + pid; }
+  function getAlias(pid, fallback){ return localStorage.getItem(aliasKey(pid)) || fallback || pid; }
+  function setAlias(pid, value){ localStorage.setItem(aliasKey(pid), value); }
+
+  async function apiGet(url) {
+    const res = await fetch(url, { method:"GET" });
+    const text = await res.text();
+    let json = null;
+    try { json = JSON.parse(text); } catch {}
+    return { ok: res.ok, status: res.status, text, json };
+  }
+
+  async function loadMatches() {
+    saveTop();
+
+    const api = apiEl().value.trim();
+    const event = eventEl().value.trim();
+    const round = roundEl().value.trim();
+
+    if (!api) { setStatus('missing api'); return; }
+    if (!event) { setStatus('missing event_code'); return; }
+
+    setStatus('loading matches…');
+    const url = `${api}?action=listMatches&event_code=${encodeURIComponent(event)}&round=${encodeURIComponent(round)}`;
+    const r = await apiGet(url);
+
+    if (!(r.json && r.json.ok)) {
+      setStatus(`listMatches fail (${r.status})`);
+      document.getElementById('tbody').innerHTML = `<tr><td colspan="8"><pre>${escapeHtml(r.text)}</pre></td></tr>`;
+      return;
+    }
+
+    const matches = r.json.matches || [];
+    if (!matches.length) {
+      setStatus('no matches');
+      document.getElementById('tbody').innerHTML = `<tr><td colspan="8">Geen matches gevonden.</td></tr>`;
+      return;
+    }
+
+    setStatus(`matches=${matches.length} loading states…`);
+
+    // Load matchState for each match (parallel-ish, but not too crazy)
+    const states = await Promise.all(matches.map(async (m) => {
+      const s = await apiGet(`${api}?action=matchState&match_id=${encodeURIComponent(m.match_id)}`);
+      return { m, s: (s.json && s.json.ok) ? s.json : null };
+    }));
+
+    render(states);
+    setStatus(`ok (${matches.length})`);
+    setUpdated();
+  }
+
+  function render(items) {
+    const rows = [];
+
+    for (const it of items) {
+      const m = it.m;
+      const st = it.s;
+
+      const pidA = m.playerA_id || (st?.match?.player_a || '');
+      const pidB = m.playerB_id || (st?.match?.player_b || '');
+
+      const nameA = getAlias(pidA, pidA);
+      const nameB = getAlias(pidB, pidB);
+
+      const scoreLabel = st?.score?.label || '—';
+      const thru = (st?.score?.thru ?? '—');
+
+      // “finished” heuristic (voor MVP):
+      // - als status in sheet "finished" of winner_player_id later
+      // - of als thru==18 en laatste holes confirmed (we hebben nog geen echte finish-detect)
+      const sheetStatus = (m.status || '').toLowerCase();
+      const finished = sheetStatus === 'finished' || sheetStatus === 'done';
+
+      const statusTxt = finished ? 'FINISHED' : 'LIVE';
+      const statusClass = finished ? 'done' : 'live';
+
+      // winner heuristic: als finished, dan:
+      // - afleiden uit scoreLabel (Up/Down) is tricky zonder context,
+      // dus tonen we voorlopig "—". Volgende stap: winner_player_id invullen in sheet.
+      const winner = finished ? (m.winner_player_id || '—') : '—';
+
+      rows.push(`
+        <tr>
+          <td class="mono">${escapeHtml(m.match_id)}</td>
+          <td>${escapeHtml(nameA)} <span class="small mono">(${escapeHtml(pidA)})</span></td>
+          <td>${escapeHtml(nameB)} <span class="small mono">(${escapeHtml(pidB)})</span></td>
+          <td><b>${escapeHtml(scoreLabel)}</b></td>
+          <td>${escapeHtml(String(thru))}</td>
+          <td class="${statusClass}">${statusTxt}</td>
+          <td>${escapeHtml(String(winner))}</td>
+          <td class="right">
+            <input class="nameEdit" placeholder="alias A" value="${escapeAttr(nameA)}"
+              oninput="window.__setAlias('${escapeJs(pidA)}', this.value)" />
+            <input class="nameEdit" placeholder="alias B" value="${escapeAttr(nameB)}"
+              oninput="window.__setAlias('${escapeJs(pidB)}', this.value)" />
+          </td>
+        </tr>
+      `);
+    }
+
+    document.getElementById('tbody').innerHTML = rows.join('');
+  }
+
+  // expose for inline handlers
+  window.__setAlias = (pid, v) => {
+    if (!pid) return;
+    setAlias(pid, (v || '').trim());
+  };
+
+  function escapeHtml(s){
+    return String(s ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+  }
+  function escapeAttr(s){
+    return String(s ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;').replaceAll('"','&quot;');
+  }
+  function escapeJs(s){
+    return String(s ?? '').replaceAll('\\','\\\\').replaceAll("'","\\'");
+  }
+
+  function reloadNow(){ loadMatches(); }
+  function toggleAuto(){
+    if (timer) {
+      clearInterval(timer); timer = null;
+      setStatus('auto: off');
+      return;
+    }
+    const sec = Math.max(2, Number(refreshEl().value || 5));
+    timer = setInterval(loadMatches, sec * 1000);
+    setStatus(`auto: on (${sec}s)`);
+  }
+
+  // auto save on change
+  ['api','event','round','refresh'].forEach(id => {
+    document.getElementById(id).addEventListener('change', () => { saveTop(); });
+  });
+
+  loadParams();
+  loadMatches();
+  // start auto by default
+  toggleAuto();
+</script>
+</body>
+</html>
