@@ -2,197 +2,408 @@
 <html lang="nl">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Matchplay Admin – R1 setup</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+  <title>Matchplay – Admin</title>
   <style>
-    body { font-family: system-ui, Arial; margin: 16px; }
-    .card { max-width: 900px; margin: 0 auto; border: 1px solid #ddd; border-radius: 16px; padding: 16px; }
-    label { display:block; margin-top: 12px; font-weight: 700; }
-    input { width:100%; padding: 12px; font-size: 16px; margin-top: 6px; box-sizing: border-box; }
-    button { padding: 12px 14px; font-size: 16px; border-radius: 12px; border: 1px solid #ccc; background:#fff; cursor: pointer; }
-    button.primary { border-color:#000; }
-    button.danger { border-color:#c00; }
-    .row { display:flex; gap: 10px; }
-    .row > * { flex: 1; }
-    table { width:100%; border-collapse: collapse; margin-top: 12px; }
-    th, td { border-bottom: 1px solid #eee; padding: 10px; text-align:left; vertical-align: top; }
-    .status { margin-top: 12px; padding: 10px; border-radius: 12px; background: #f6f6f6; white-space: pre-wrap; }
-    .small { opacity:.75; font-size: 12px; }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size: 12px; }
-    .right { text-align:right; }
+    :root{
+      --bg:#0b0c10;
+      --card:#11131a;
+      --muted:#9aa3b2;
+      --text:#eef1f7;
+      --line:#262b36;
+      --good:#19c37d;
+      --warn:#ffcc00;
+      --bad:#ff4d4d;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --r:18px;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: radial-gradient(1200px 600px at 50% -10%, #1a2140 0%, var(--bg) 55%);
+      color:var(--text);
+    }
+    .wrap{ max-width:1000px; margin:0 auto; padding:18px 14px 28px; }
+    .top{
+      display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end;
+      border:1px solid var(--line); border-radius:var(--r);
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      box-shadow: var(--shadow);
+      padding:14px;
+    }
+    h1{ margin:0; font-size:22px; }
+    .sub{ color:var(--muted); font-size:13px; line-height:1.35; max-width:650px; }
+    .pill{
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:7px 10px;
+      font-size:12px;
+      color:var(--muted);
+      background: rgba(255,255,255,.02);
+      white-space:nowrap;
+    }
+    .pills{ display:flex; gap:8px; flex-wrap:wrap; margin-left:auto; }
+
+    .grid{
+      margin-top:14px;
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap:14px;
+    }
+    @media (max-width: 900px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+    .card{
+      border:1px solid var(--line);
+      border-radius:var(--r);
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      box-shadow: var(--shadow);
+      padding:16px;
+    }
+    .card h2{ margin:0 0 8px 0; font-size:16px; }
+    .hint{ color:var(--muted); font-size:13px; line-height:1.35; }
+
+    label{ display:block; font-weight:900; font-size:12px; margin:12px 0 6px; color:var(--muted); }
+    input, textarea, select{
+      width:100%;
+      padding:12px 12px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.25);
+      color:var(--text);
+      font-size:15px;
+      outline:none;
+    }
+    textarea{ min-height: 260px; resize: vertical; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:13px; }
+    input:focus, textarea:focus{ border-color:#3b82f6; }
+
+    .row{ display:flex; gap:10px; }
+    .row>*{ flex:1; }
+    button{
+      padding:12px 14px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      color:var(--text);
+      font-size:16px;
+      font-weight:1000;
+      cursor:pointer;
+      -webkit-tap-highlight-color: transparent;
+    }
+    button:active{ transform: translateY(1px); }
+    .btnGood{ border-color: rgba(25,195,125,.55); }
+    .btnWarn{ border-color: rgba(255,204,0,.65); }
+    .btnBad{ border-color: rgba(255,77,77,.65); }
+
+    .mini{
+      margin-top:12px;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    @media (max-width: 520px){
+      .mini{ grid-template-columns: 1fr; }
+    }
+    .kpi{
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px;
+      background: rgba(0,0,0,.22);
+    }
+    .kpi .k{ color:var(--muted); font-size:12px; }
+    .kpi .v{ font-size:20px; font-weight:1000; margin-top:3px; }
+
+    .status{
+      margin-top:12px;
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:12px;
+      background: rgba(0,0,0,.25);
+      color:var(--muted);
+      font-size:13px;
+      white-space: pre-wrap;
+      line-height:1.35;
+      min-height: 120px;
+    }
+
+    .tiny{ color:var(--muted); font-size:12px; line-height:1.35; margin-top:10px; }
+
+    .ok{ color: var(--good); font-weight:1000; }
+    .no{ color: var(--bad); font-weight:1000; }
   </style>
 </head>
+
 <body>
-  <div class="card">
-    <h2>Matchplay Admin – R1 setup</h2>
-    <div class="small">
-      Vul matches in (email A vs email B). Klik <b>Send R1 mails</b>.<br/>
-      Dit gebruikt <span class="mono">x-www-form-urlencoded</span> zodat CORS-preflight wordt vermeden (Apps Script dingetje™).
-    </div>
+<div class="wrap">
 
-    <label>Apps Script API URL (exec)</label>
-    <input id="apiUrl" placeholder="https://script.google.com/macros/s/.../exec" />
-
-    <div class="row">
-      <div>
-        <label>Event code (kort)</label>
-        <input id="eventCode" value="MP2026" />
-      </div>
-      <div>
-        <label>Admin key</label>
-        <input id="adminKey" placeholder="(uit Google Sheet config)" />
+  <div class="top">
+    <div>
+      <h1>Matchplay Admin</h1>
+      <div class="sub">
+        Maak ronde 1 aan vanuit email-paren. De sheet maakt player_id’s + match_id’s en verstuurt mails met scoring-link.
+        E-mails worden <b>niet</b> opgeslagen in Sheets (alleen hash + player_id).
       </div>
     </div>
 
-    <div style="margin-top:12px" class="row">
-      <button onclick="addRow()">+ Add match</button>
-      <button class="danger" onclick="clearAll()">Clear</button>
-      <button class="primary" onclick="sendR1()">Send R1 mails</button>
+    <div class="pills">
+      <span class="pill" id="pillApi">api: —</span>
+      <span class="pill" id="pillEvent">event: —</span>
+      <span class="pill" id="pillRound">round: R1</span>
     </div>
-
-    <table id="tbl">
-      <thead>
-        <tr>
-          <th style="width:50px;">#</th>
-          <th>Email speler A</th>
-          <th>Email speler B</th>
-          <th style="width:120px;" class="right">Actie</th>
-        </tr>
-      </thead>
-      <tbody></tbody>
-    </table>
-
-    <div class="small" style="margin-top:10px;">
-      Tip: je kunt ook meerdere regels in één keer plakken (tab/komma gescheiden) in de eerste cel.
-    </div>
-
-    <div id="status" class="status">Status: klaar.</div>
   </div>
 
+  <div class="grid">
+    <!-- LEFT: INPUT -->
+    <div class="card">
+      <h2>1) Instellingen</h2>
+      <div class="hint">Vul de API URL (Apps Script /exec), je admin key, event code, en plak paren “emailA,emailB”.</div>
+
+      <label>API URL</label>
+      <input id="api" placeholder="https://script.google.com/macros/s/.../exec" />
+
+      <div class="row">
+        <div>
+          <label>Admin key</label>
+          <input id="adminKey" placeholder="(uit config sheet)" />
+        </div>
+        <div>
+          <label>Event code</label>
+          <input id="eventCode" placeholder="MP2026" />
+        </div>
+      </div>
+
+      <label>Round</label>
+      <select id="round">
+        <option value="R1" selected>R1 (default)</option>
+      </select>
+
+      <label>Paren (emailA,emailB) – één per regel</label>
+      <textarea id="pairs" placeholder="a@club.nl,b@club.nl&#10;c@club.nl,d@club.nl"></textarea>
+
+      <div class="row" style="margin-top:12px;">
+        <button class="btnWarn" onclick="preview()">Preview</button>
+        <button class="btnGood" onclick="send()">Create + Mail</button>
+      </div>
+
+      <div class="tiny">
+        Tip: je kan ook “;” of tab gebruiken als scheiding. Lege regels worden genegeerd.
+      </div>
+    </div>
+
+    <!-- RIGHT: PREVIEW + STATS -->
+    <div class="card">
+      <h2>2) Controle</h2>
+      <div class="hint">Preview laat zien hoeveel matches/players er aangemaakt worden en of de input klopt.</div>
+
+      <div class="mini">
+        <div class="kpi">
+          <div class="k">Matches</div>
+          <div class="v" id="kMatches">—</div>
+        </div>
+        <div class="kpi">
+          <div class="k">Unieke spelers</div>
+          <div class="v" id="kPlayers">—</div>
+        </div>
+        <div class="kpi">
+          <div class="k">Input regels</div>
+          <div class="v" id="kLines">—</div>
+        </div>
+        <div class="kpi">
+          <div class="k">Valid</div>
+          <div class="v" id="kValid">—</div>
+        </div>
+      </div>
+
+      <div class="status" id="status">Status: klaar</div>
+
+      <div class="tiny">
+        <span class="ok">Groen</span> = ok. <span class="no">Rood</span> = input fout.
+        Als mails falen: check Apps Script authorisatie (Gmail scopes) en deploy permissies.
+      </div>
+    </div>
+  </div>
+
+</div>
+
 <script>
-  const tbody = document.querySelector('#tbl tbody');
+  function $(id){ return document.getElementById(id); }
 
-  function setStatus(msg) {
-    document.getElementById('status').textContent = 'Status: ' + msg;
+  function setStatus(msg){ $('status').textContent = 'Status: ' + msg; }
+  function setPills(){
+    $('pillApi').textContent   = 'api: ' + (truncate($('api').value.trim(), 34) || '—');
+    $('pillEvent').textContent = 'event: ' + ($('eventCode').value.trim() || '—');
+    $('pillRound').textContent = 'round: ' + ($('round').value || 'R1');
+  }
+  function truncate(s,n){ s=String(s||''); return s.length>n ? s.slice(0,n-1)+'…' : s; }
+
+  function normEmail(e){
+    return String(e||'').trim().toLowerCase();
+  }
+  function isValidEmail(e){
+    const x = normEmail(e);
+    return x.includes('@') && x.includes('.') && x.length >= 6;
   }
 
-  function renumber() {
-    [...tbody.children].forEach((tr,i) => tr.querySelector('[data-idx]').textContent = String(i+1));
-  }
+  function parsePairs(text){
+    const lines = String(text||'').split(/\r?\n/);
+    const out = [];
+    let rawLines = 0;
+    let invalid = [];
 
-  function addRow(a='', b='') {
-    const tr = document.createElement('tr');
+    for (const line of lines){
+      const t = line.trim();
+      if (!t) continue;
+      rawLines++;
 
-    tr.innerHTML = `
-      <td data-idx>0</td>
-      <td><input type="email" placeholder="a@club.nl" value="${escapeHtml(a)}" /></td>
-      <td><input type="email" placeholder="b@club.nl" value="${escapeHtml(b)}" /></td>
-      <td class="right">
-        <button onclick="removeRow(this)">Remove</button>
-      </td>
-    `;
-
-    // paste helper: if user pastes multiple lines into first email cell
-    const inputA = tr.children[1].querySelector('input');
-    inputA.addEventListener('paste', (ev) => {
-      const text = (ev.clipboardData || window.clipboardData).getData('text');
-      if (!text) return;
-      const lines = text.trim().split(/\r?\n/);
-      // only handle multiline paste
-      if (lines.length < 2) return;
-      ev.preventDefault();
-
-      // Expect each line: emailA [tab/comma/semicolon] emailB
-      const parsed = [];
-      for (const line of lines) {
-        const parts = line.split(/[\t,;]+/).map(s => s.trim()).filter(Boolean);
-        if (parts.length >= 2) parsed.push({a: parts[0], b: parts[1]});
+      // allow commas, semicolons, tabs, multiple spaces
+      const parts = t.split(/[,\t;]+/).map(x=>x.trim()).filter(Boolean);
+      if (parts.length < 2){
+        invalid.push({ line:t, reason:'geen 2 emails' });
+        continue;
       }
-      if (!parsed.length) return;
+      const a = normEmail(parts[0]);
+      const b = normEmail(parts[1]);
 
-      // fill current row with first, add the rest
-      inputA.value = parsed[0].a;
-      tr.children[2].querySelector('input').value = parsed[0].b;
+      if (!isValidEmail(a) || !isValidEmail(b)){
+        invalid.push({ line:t, reason:'email ongeldig' });
+        continue;
+      }
+      if (a === b){
+        invalid.push({ line:t, reason:'zelfde email 2x' });
+        continue;
+      }
+      out.push({ email_a:a, email_b:b });
+    }
 
-      for (let i=1; i<parsed.length; i++) addRow(parsed[i].a, parsed[i].b);
-      renumber();
-      setStatus(`Geplakt: ${parsed.length} matches.`);
-    });
-
-    tbody.appendChild(tr);
-    renumber();
+    return { pairs: out, rawLines, invalid };
   }
 
-  function removeRow(btn) {
-    btn.closest('tr').remove();
-    renumber();
+  function calcStats(pairs){
+    const set = new Set();
+    for (const p of pairs){ set.add(p.email_a); set.add(p.email_b); }
+    return { matches: pairs.length, players: set.size };
   }
 
-  function clearAll() {
-    tbody.innerHTML = '';
-    addRow(); addRow(); addRow(); addRow();
-    setStatus('Leeg gemaakt.');
+  function updateKpi({pairs, rawLines, invalid}){
+    const stats = calcStats(pairs);
+    $('kMatches').textContent = stats.matches;
+    $('kPlayers').textContent = stats.players;
+    $('kLines').textContent = rawLines;
+    $('kValid').innerHTML = invalid.length ? `<span class="no">NO (${invalid.length})</span>` : `<span class="ok">YES</span>`;
   }
 
-  function escapeHtml(s) {
-    return String(s || '')
-      .replaceAll('&','&amp;')
-      .replaceAll('<','&lt;')
-      .replaceAll('>','&gt;')
-      .replaceAll('"','&quot;')
-      .replaceAll("'","&#039;");
-  }
-
-  function collectPairs() {
-    const pairs = [];
-    [...tbody.children].forEach(tr => {
-      const emailA = tr.children[1].querySelector('input').value.trim();
-      const emailB = tr.children[2].querySelector('input').value.trim();
-      if (emailA && emailB) pairs.push({ email_a: emailA, email_b: emailB });
-    });
-    return pairs;
-  }
-
-  async function sendR1() {
-    const apiUrl = document.getElementById('apiUrl').value.trim();
-    const eventCode = document.getElementById('eventCode').value.trim();
-    const adminKey = document.getElementById('adminKey').value.trim();
-
-    if (!apiUrl) return setStatus('API URL ontbreekt.');
-    if (!eventCode) return setStatus('Event code ontbreekt.');
-    if (!adminKey) return setStatus('Admin key ontbreekt.');
-
-    const pairs = collectPairs();
-    if (pairs.length < 1) return setStatus('Geen matches ingevuld.');
-
-    setStatus(`Versturen… matches=${pairs.length}`);
-
-    // IMPORTANT: use x-www-form-urlencoded to avoid CORS preflight for Apps Script
-    const payload = {
-      action: 'adminSetupR1',
-      admin_key: adminKey,
-      event_code: eventCode,
-      pairs
-    };
-
+  async function apiPost(apiUrl, payloadObj){
+    // form-urlencoded to avoid CORS preflight
     const data = new URLSearchParams();
-    data.set('payload', JSON.stringify(payload));
+    data.set('payload', JSON.stringify(payloadObj));
 
-    try {
-      const res = await fetch(apiUrl, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded;charset=UTF-8' },
-        body: data.toString()
-      });
-      const text = await res.text();
-      setStatus(`Response (HTTP ${res.status}):\n${text}`);
-    } catch (e) {
-      setStatus('Fout: ' + (e?.message || e));
+    const res = await fetch(apiUrl, {
+      method: "POST",
+      headers: { "Content-Type":"application/x-www-form-urlencoded;charset=UTF-8" },
+      body: data.toString()
+    });
+    const text = await res.text();
+    let json=null; try{ json=JSON.parse(text); }catch{}
+    return { ok: res.ok, status: res.status, text, json };
+  }
+
+  function preview(){
+    const api = $('api').value.trim();
+    const eventCode = $('eventCode').value.trim();
+    const round = $('round').value;
+
+    setPills();
+
+    const parsed = parsePairs($('pairs').value);
+    updateKpi(parsed);
+
+    if (!api) return setStatus('API URL ontbreekt.');
+    if (!eventCode) return setStatus('Event code ontbreekt.');
+
+    if (parsed.invalid.length){
+      const top = parsed.invalid.slice(0,8).map(x=>`- ${x.reason}: ${x.line}`).join('\n');
+      setStatus(`Input heeft fouten:\n${top}\n\nFix de regels en probeer opnieuw.`);
+      return;
+    }
+    if (!parsed.pairs.length){
+      setStatus('Geen paren gevonden.');
+      return;
+    }
+
+    const stats = calcStats(parsed.pairs);
+    setStatus(`Preview OK.\nMatches: ${stats.matches}\nUnieke spelers: ${stats.players}\nRound: ${round}\nEvent: ${eventCode}`);
+  }
+
+  async function send(){
+    try{
+      setPills();
+
+      const api = $('api').value.trim();
+      const adminKey = $('adminKey').value.trim();
+      const eventCode = $('eventCode').value.trim();
+      const round = $('round').value;
+
+      const parsed = parsePairs($('pairs').value);
+      updateKpi(parsed);
+
+      if (!api) return setStatus('API URL ontbreekt.');
+      if (!adminKey) return setStatus('Admin key ontbreekt.');
+      if (!eventCode) return setStatus('Event code ontbreekt.');
+      if (parsed.invalid.length){
+        const top = parsed.invalid.slice(0,8).map(x=>`- ${x.reason}: ${x.line}`).join('\n');
+        return setStatus(`Input heeft fouten:\n${top}`);
+      }
+      if (!parsed.pairs.length) return setStatus('Geen paren gevonden.');
+
+      setStatus('Versturen… (adminSetupR1)');
+
+      const payload = {
+        action: "adminSetupR1",
+        admin_key: adminKey,
+        event_code: eventCode,
+        round: round,
+        pairs: parsed.pairs
+      };
+
+      const r = await apiPost(api, payload);
+
+      if (r.json && r.json.ok){
+        setStatus(`✅ Klaar.\nMatches: ${r.json.matches_created}\nPlayers: ${r.json.players_created}\nErrors: ${r.json.errors}\n\nCheck je mailbox voor admin summary.`);
+      } else {
+        setStatus(`❌ Fout (HTTP ${r.status}).\n${r.text}`);
+      }
+    }catch(e){
+      setStatus('❌ Fout: ' + (e?.message || e));
     }
   }
 
-  // init rows
-  addRow(); addRow(); addRow(); addRow();
+  // init from query/localStorage
+  (function init(){
+    const p = new URLSearchParams(location.search);
+
+    const api = p.get('api') || localStorage.getItem('ad_api') || '';
+    const event = p.get('event_code') || localStorage.getItem('ad_event') || '';
+    const key = localStorage.getItem('ad_key') || '';
+
+    $('api').value = api;
+    $('eventCode').value = event;
+    $('adminKey').value = key;
+    $('round').value = 'R1';
+
+    setPills();
+    setStatus('Plak paren en klik Preview.');
+  })();
+
+  // persist on change
+  ['api','eventCode','adminKey'].forEach(id=>{
+    $(id).addEventListener('change', ()=>{
+      localStorage.setItem('ad_api', $('api').value.trim());
+      localStorage.setItem('ad_event', $('eventCode').value.trim());
+      localStorage.setItem('ad_key', $('adminKey').value.trim());
+      setPills();
+    });
+  });
 </script>
 </body>
 </html>
