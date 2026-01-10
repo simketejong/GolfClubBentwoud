@@ -5,30 +5,128 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Matchplay – Live Scoreboard</title>
   <style>
-    body { font-family: system-ui, Arial; margin: 16px; background:#fff; }
-    .top { max-width: 1200px; margin: 0 auto; display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap; }
-    .card { max-width: 1200px; margin: 12px auto 0; border: 1px solid #ddd; border-radius: 16px; padding: 16px; }
-    label { display:block; font-weight: 700; }
-    input { padding: 10px; font-size: 16px; width: 260px; }
-    button { padding: 10px 12px; font-size: 16px; border-radius: 12px; border: 1px solid #ccc; background:#fff; cursor:pointer; }
-    .pill { display:inline-block; padding:6px 10px; border:1px solid #eee; border-radius:999px; background:#fafafa; margin-right:6px; }
-    table { width:100%; border-collapse: collapse; }
-    th, td { border-bottom: 1px solid #eee; padding: 10px; text-align:left; }
-    th { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; opacity:.7; }
-    .right { text-align:right; }
-    .mono { font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
-    .small { font-size: 12px; opacity:.75; }
-    .live { font-weight: 800; }
-    .done { font-weight: 800; }
-    .row { display:flex; gap:10px; align-items:center; flex-wrap:wrap; }
-    .nameEdit { width: 180px; }
+    :root{
+      --bg:#0b0c10;
+      --card:#11131a;
+      --muted:#9aa3b2;
+      --text:#eef1f7;
+      --line:#262b36;
+      --good:#19c37d;
+      --warn:#ffcc00;
+      --bad:#ff4d4d;
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --r:18px;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: radial-gradient(1200px 600px at 50% -10%, #1a2140 0%, var(--bg) 55%);
+      color:var(--text);
+    }
+    .wrap{ max-width:1300px; margin:0 auto; padding:18px 16px 28px; }
+    .top{
+      display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end;
+      border:1px solid var(--line); border-radius:var(--r);
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      box-shadow: var(--shadow);
+      padding:14px;
+    }
+    h1{ margin:0; font-size:22px; }
+    .sub{ color:var(--muted); font-size:13px; }
+    label{ display:block; font-weight:800; font-size:12px; margin-bottom:6px; color:var(--muted); }
+    input{
+      padding:12px 12px; font-size:16px; border-radius:14px;
+      border:1px solid var(--line); background: rgba(0,0,0,.25);
+      color:var(--text); outline:none; width: 270px;
+    }
+    input.small{ width: 120px; }
+    button{
+      padding:12px 14px; font-size:16px; border-radius:14px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      color:var(--text); cursor:pointer;
+      font-weight:900;
+    }
+    button:active{ transform: translateY(1px); }
+
+    .pills{ display:flex; gap:8px; flex-wrap:wrap; margin-left:auto; }
+    .pill{
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:7px 10px;
+      font-size:12px;
+      color:var(--muted);
+      background: rgba(255,255,255,.02);
+    }
+    .mono{ font-family: ui-monospace, SFMono-Regular, Menlo, monospace; }
+
+    .board{
+      margin-top:14px;
+      border:1px solid var(--line);
+      border-radius:var(--r);
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    table{ width:100%; border-collapse: collapse; }
+    th, td{ padding: 14px 12px; border-bottom:1px solid rgba(255,255,255,.06); text-align:left; }
+    th{
+      font-size:12px;
+      text-transform: uppercase;
+      letter-spacing:.08em;
+      color:var(--muted);
+      background: rgba(0,0,0,.18);
+    }
+    tr:last-child td{ border-bottom:none; }
+    .right{ text-align:right; }
+    .center{ text-align:center; }
+
+    .matchId{ font-weight:900; }
+    .nameLine{ display:flex; align-items:center; gap:10px; }
+    .tag{
+      display:inline-block;
+      min-width:48px;
+      text-align:center;
+      padding:6px 10px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.03);
+      font-weight:1000;
+      letter-spacing:.02em;
+    }
+    .tag.as{ color:var(--muted); }
+    .tag.up{ border-color: rgba(25,195,125,.5); color: var(--good); }
+    .tag.down{ border-color: rgba(255,77,77,.6); color: var(--bad); }
+    .stateLive{ color: var(--good); font-weight:1000; }
+    .stateWarn{ color: var(--warn); font-weight:1000; }
+    .stateDone{ color: var(--muted); font-weight:1000; }
+
+    .aliasEdit{
+      width: 160px;
+      padding:10px 10px;
+      border-radius:12px;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.22);
+      color:var(--text);
+      font-size:14px;
+      outline:none;
+    }
+    .small{ color:var(--muted); font-size:12px; }
   </style>
 </head>
+
 <body>
+<div class="wrap">
 
   <div class="top">
+    <div style="min-width:260px;">
+      <h1>Live Scoreboard</h1>
+      <div class="sub">Auto-refresh default 20s. Aliassen zijn client-only (localStorage).</div>
+    </div>
+
     <div>
-      <label>API (uit mail-link)</label>
+      <label>API</label>
       <input id="api" placeholder=".../exec" />
     </div>
     <div>
@@ -37,38 +135,36 @@
     </div>
     <div>
       <label>Round</label>
-      <input id="round" placeholder="R1" />
+      <input id="round" class="small" placeholder="R1" />
     </div>
     <div>
       <label>Refresh (sec)</label>
-      <input id="refresh" placeholder="5" />
+      <input id="refresh" class="small" placeholder="20" />
     </div>
-    <div class="row">
+
+    <div style="display:flex; gap:10px;">
       <button onclick="reloadNow()">Reload</button>
       <button onclick="toggleAuto()">Auto</button>
     </div>
-    <div class="row small">
+
+    <div class="pills">
       <span class="pill" id="pStatus">status: —</span>
       <span class="pill mono" id="pUpdated">updated: —</span>
+      <span class="pill mono" id="pAuto">auto: —</span>
     </div>
   </div>
 
-  <div class="card">
-    <h2 style="margin:0 0 8px 0;">Live Scoreboard</h2>
-    <div class="small">
-      Roepnamen zijn <b>client-only</b> (localStorage). Je kan ze hier aanpassen zonder iets naar de cloud te sturen.
-    </div>
-
+  <div class="board">
     <table>
       <thead>
         <tr>
           <th>Match</th>
           <th>Speler A</th>
           <th>Speler B</th>
-          <th>Stand</th>
-          <th>Thru</th>
-          <th>Status</th>
-          <th>Winner</th>
+          <th class="center">Hole</th>
+          <th class="center">Status</th>
+          <th class="center">Tijd</th>
+          <th class="center">Gem/hole</th>
           <th class="right">Alias aanpassen</th>
         </tr>
       </thead>
@@ -78,17 +174,31 @@
     </table>
   </div>
 
+</div>
+
 <script>
   let timer = null;
 
-  function qs() { return new URLSearchParams(location.search); }
+  function qs(){ return new URLSearchParams(location.search); }
+  function apiEl(){ return document.getElementById('api'); }
+  function eventEl(){ return document.getElementById('event'); }
+  function roundEl(){ return document.getElementById('round'); }
+  function refreshEl(){ return document.getElementById('refresh'); }
 
-  function loadParams() {
+  function setStatus(msg){ document.getElementById('pStatus').textContent = 'status: ' + msg; }
+  function setUpdated(){ document.getElementById('pUpdated').textContent = 'updated: ' + new Date().toLocaleTimeString(); }
+  function setAuto(msg){ document.getElementById('pAuto').textContent = 'auto: ' + msg; }
+
+  function aliasKey(pid){ return 'alias_' + pid; }
+  function getAlias(pid, fallback){ return localStorage.getItem(aliasKey(pid)) || fallback || pid; }
+  function setAlias(pid, value){ localStorage.setItem(aliasKey(pid), value); }
+
+  function loadParams(){
     const p = qs();
     const api = p.get('api') || localStorage.getItem('sb_api') || '';
     const event = p.get('event_code') || localStorage.getItem('sb_event') || '';
     const round = p.get('round') || localStorage.getItem('sb_round') || 'R1';
-    const refresh = p.get('refresh') || localStorage.getItem('sb_refresh') || '5';
+    const refresh = p.get('refresh') || localStorage.getItem('sb_refresh') || '20';
 
     apiEl().value = api;
     eventEl().value = event;
@@ -98,130 +208,69 @@
     saveTop();
   }
 
-  function saveTop() {
+  function saveTop(){
     localStorage.setItem('sb_api', apiEl().value.trim());
     localStorage.setItem('sb_event', eventEl().value.trim());
     localStorage.setItem('sb_round', roundEl().value.trim());
     localStorage.setItem('sb_refresh', refreshEl().value.trim());
   }
 
-  function apiEl(){ return document.getElementById('api'); }
-  function eventEl(){ return document.getElementById('event'); }
-  function roundEl(){ return document.getElementById('round'); }
-  function refreshEl(){ return document.getElementById('refresh'); }
-
-  function setStatus(msg){ document.getElementById('pStatus').textContent = 'status: ' + msg; }
-  function setUpdated(){ document.getElementById('pUpdated').textContent = 'updated: ' + new Date().toLocaleTimeString(); }
-
-  function aliasKey(pid){ return 'alias_' + pid; }
-  function getAlias(pid, fallback){ return localStorage.getItem(aliasKey(pid)) || fallback || pid; }
-  function setAlias(pid, value){ localStorage.setItem(aliasKey(pid), value); }
-
-  async function apiGet(url) {
+  async function apiGet(url){
     const res = await fetch(url, { method:"GET" });
     const text = await res.text();
-    let json = null;
-    try { json = JSON.parse(text); } catch {}
-    return { ok: res.ok, status: res.status, text, json };
+    let json=null; try{ json=JSON.parse(text); }catch{}
+    return { ok:res.ok, status:res.status, text, json };
   }
 
-  async function loadMatches() {
-    saveTop();
-
-    const api = apiEl().value.trim();
-    const event = eventEl().value.trim();
-    const round = roundEl().value.trim();
-
-    if (!api) { setStatus('missing api'); return; }
-    if (!event) { setStatus('missing event_code'); return; }
-
-    setStatus('loading matches…');
-    const url = `${api}?action=listMatches&event_code=${encodeURIComponent(event)}&round=${encodeURIComponent(round)}`;
-    const r = await apiGet(url);
-
-    if (!(r.json && r.json.ok)) {
-      setStatus(`listMatches fail (${r.status})`);
-      document.getElementById('tbody').innerHTML = `<tr><td colspan="8"><pre>${escapeHtml(r.text)}</pre></td></tr>`;
-      return;
-    }
-
-    const matches = r.json.matches || [];
-    if (!matches.length) {
-      setStatus('no matches');
-      document.getElementById('tbody').innerHTML = `<tr><td colspan="8">Geen matches gevonden.</td></tr>`;
-      return;
-    }
-
-    setStatus(`matches=${matches.length} loading states…`);
-
-    // Load matchState for each match (parallel-ish, but not too crazy)
-    const states = await Promise.all(matches.map(async (m) => {
-      const s = await apiGet(`${api}?action=matchState&match_id=${encodeURIComponent(m.match_id)}`);
-      return { m, s: (s.json && s.json.ok) ? s.json : null };
-    }));
-
-    render(states);
-    setStatus(`ok (${matches.length})`);
-    setUpdated();
+  function formatDur(ms){
+    if (!isFinite(ms) || ms <= 0) return '—';
+    const s = Math.floor(ms/1000);
+    const hh = Math.floor(s/3600);
+    const mm = Math.floor((s%3600)/60);
+    const ss = s%60;
+    if (hh>0) return `${hh}h ${String(mm).padStart(2,'0')}m`;
+    if (mm>0) return `${mm}m ${String(ss).padStart(2,'0')}s`;
+    return `${ss}s`;
   }
 
-  function render(items) {
-    const rows = [];
-
-    for (const it of items) {
-      const m = it.m;
-      const st = it.s;
-
-      const pidA = m.playerA_id || (st?.match?.player_a || '');
-      const pidB = m.playerB_id || (st?.match?.player_b || '');
-
-      const nameA = getAlias(pidA, pidA);
-      const nameB = getAlias(pidB, pidB);
-
-      const scoreLabel = st?.score?.label || '—';
-      const thru = (st?.score?.thru ?? '—');
-
-      // “finished” heuristic (voor MVP):
-      // - als status in sheet "finished" of winner_player_id later
-      // - of als thru==18 en laatste holes confirmed (we hebben nog geen echte finish-detect)
-      const sheetStatus = (m.status || '').toLowerCase();
-      const finished = sheetStatus === 'finished' || sheetStatus === 'done';
-
-      const statusTxt = finished ? 'FINISHED' : 'LIVE';
-      const statusClass = finished ? 'done' : 'live';
-
-      // winner heuristic: als finished, dan:
-      // - afleiden uit scoreLabel (Up/Down) is tricky zonder context,
-      // dus tonen we voorlopig "—". Volgende stap: winner_player_id invullen in sheet.
-      const winner = finished ? (m.winner_player_id || '—') : '—';
-
-      rows.push(`
-        <tr>
-          <td class="mono">${escapeHtml(m.match_id)}</td>
-          <td>${escapeHtml(nameA)} <span class="small mono">(${escapeHtml(pidA)})</span></td>
-          <td>${escapeHtml(nameB)} <span class="small mono">(${escapeHtml(pidB)})</span></td>
-          <td><b>${escapeHtml(scoreLabel)}</b></td>
-          <td>${escapeHtml(String(thru))}</td>
-          <td class="${statusClass}">${statusTxt}</td>
-          <td>${escapeHtml(String(winner))}</td>
-          <td class="right">
-            <input class="nameEdit" placeholder="alias A" value="${escapeAttr(nameA)}"
-              oninput="window.__setAlias('${escapeJs(pidA)}', this.value)" />
-            <input class="nameEdit" placeholder="alias B" value="${escapeAttr(nameB)}"
-              oninput="window.__setAlias('${escapeJs(pidB)}', this.value)" />
-          </td>
-        </tr>
-      `);
-    }
-
-    document.getElementById('tbody').innerHTML = rows.join('');
+  function parseIso(s){
+    const t = Date.parse(s);
+    return isNaN(t) ? null : t;
   }
 
-  // expose for inline handlers
-  window.__setAlias = (pid, v) => {
-    if (!pid) return;
-    setAlias(pid, (v || '').trim());
-  };
+  function computeTimingFromState(st){
+    // Uses submit_a/submit_b timestamps per hole.
+    // total time: earliest submit -> latest submit among holes that have any submit
+    // avg/hole: total / confirmed_count (or submitted_count as fallback)
+    const holes = st?.holes || [];
+    let minT = null, maxT = null;
+    let confirmedCount = 0;
+    let submittedCount = 0;
+
+    for (const h of holes){
+      const ta = parseIso(h?.submit_a?.ts);
+      const tb = parseIso(h?.submit_b?.ts);
+
+      if (ta !== null){ submittedCount++; minT = (minT===null)?ta:Math.min(minT,ta); maxT = (maxT===null)?ta:Math.max(maxT,ta); }
+      if (tb !== null){ submittedCount++; minT = (minT===null)?tb:Math.min(minT,tb); maxT = (maxT===null)?tb:Math.max(maxT,tb); }
+
+      if (h?.state === 'confirmed') confirmedCount++;
+    }
+
+    if (minT === null || maxT === null) return { totalMs: 0, avgMs: 0, confirmedHoles: 0 };
+
+    const totalMs = Math.max(0, maxT - minT);
+    const denom = confirmedCount > 0 ? confirmedCount : Math.max(1, Math.floor(submittedCount/2)); // fallback-ish
+    const avgMs = totalMs / denom;
+
+    return { totalMs, avgMs, confirmedHoles: confirmedCount };
+  }
+
+  function scoreTag(povNet){
+    if (povNet === 0) return { text:'AS', cls:'as' };
+    if (povNet > 0) return { text:`${povNet}U`, cls:'up' };
+    return { text:`${Math.abs(povNet)}D`, cls:'down' };
+  }
 
   function escapeHtml(s){
     return String(s ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
@@ -233,26 +282,166 @@
     return String(s ?? '').replaceAll('\\','\\\\').replaceAll("'","\\'");
   }
 
-  function reloadNow(){ loadMatches(); }
-  function toggleAuto(){
-    if (timer) {
-      clearInterval(timer); timer = null;
-      setStatus('auto: off');
+  async function loadMatches(){
+    saveTop();
+
+    const api = apiEl().value.trim();
+    const event = eventEl().value.trim();
+    const round = roundEl().value.trim();
+
+    if (!api){ setStatus('missing api'); return; }
+    if (!event){ setStatus('missing event_code'); return; }
+
+    setStatus('loading matches…');
+    const lmUrl = `${api}?action=listMatches&event_code=${encodeURIComponent(event)}&round=${encodeURIComponent(round)}`;
+    const r = await apiGet(lmUrl);
+
+    if (!(r.json && r.json.ok)){
+      setStatus(`listMatches fail (${r.status})`);
+      document.getElementById('tbody').innerHTML = `<tr><td colspan="8"><pre>${escapeHtml(r.text)}</pre></td></tr>`;
       return;
     }
-    const sec = Math.max(2, Number(refreshEl().value || 5));
-    timer = setInterval(loadMatches, sec * 1000);
-    setStatus(`auto: on (${sec}s)`);
+
+    const matches = r.json.matches || [];
+    if (!matches.length){
+      setStatus('no matches');
+      document.getElementById('tbody').innerHTML = `<tr><td colspan="8">Geen matches gevonden.</td></tr>`;
+      return;
+    }
+
+    setStatus(`matches=${matches.length} loading states…`);
+
+    const states = await Promise.all(matches.map(async (m) => {
+      const s = await apiGet(`${api}?action=matchState&match_id=${encodeURIComponent(m.match_id)}`);
+      return { m, st: (s.json && s.json.ok) ? s.json : null };
+    }));
+
+    render(states);
+    setStatus(`ok (${matches.length})`);
+    setUpdated();
   }
 
-  // auto save on change
-  ['api','event','round','refresh'].forEach(id => {
-    document.getElementById(id).addEventListener('change', () => { saveTop(); });
+  function render(items){
+    // Sort: finished last, then by match_id
+    items.sort((a,b)=>{
+      const af = !!a.st?.score?.finished;
+      const bf = !!b.st?.score?.finished;
+      if (af !== bf) return af ? 1 : -1;
+      return String(a.m.match_id).localeCompare(String(b.m.match_id));
+    });
+
+    const rows = [];
+
+    for (const it of items){
+      const m = it.m;
+      const st = it.st;
+
+      const matchId = m.match_id;
+
+      const pidA = m.playerA_id || st?.match?.player_a || '';
+      const pidB = m.playerB_id || st?.match?.player_b || '';
+
+      const nameA = getAlias(pidA, pidA);
+      const nameB = getAlias(pidB, pidB);
+
+      const net = Number(st?.score?.net ?? 0);
+      const thru = Number(st?.score?.thru ?? 0);   // shown as Hole
+      const holesRemaining = Number(st?.score?.holes_remaining ?? (18 - thru));
+      const finished = !!st?.score?.finished;
+
+      // POV tags
+      const tagA = scoreTag(net);       // A sees net
+      const tagB = scoreTag(-net);      // B sees opposite
+
+      // Status text
+      let statusTxt = 'LIVE';
+      let statusCls = 'stateLive';
+
+      // show warning if mismatch exists anywhere up to current hole+1
+      const hasMismatch = (st?.holes || []).some(h => h.state === 'mismatch');
+      if (hasMismatch) { statusTxt = 'MISMATCH'; statusCls = 'stateWarn'; }
+
+      if (finished) { statusTxt = 'FINISHED'; statusCls = 'stateDone'; }
+
+      // timing
+      const timing = computeTimingFromState(st);
+      const totalStr = formatDur(timing.totalMs);
+      const avgStr = timing.confirmedHoles > 0 ? formatDur(timing.avgMs) : '—';
+
+      rows.push(`
+        <tr>
+          <td class="matchId mono">${escapeHtml(matchId)}</td>
+
+          <td>
+            <div class="nameLine">
+              <span class="tag ${tagA.cls}">${escapeHtml(tagA.text)}</span>
+              <div>
+                <div style="font-weight:1000;">${escapeHtml(nameA)}</div>
+                <div class="small mono">${escapeHtml(pidA)}</div>
+              </div>
+            </div>
+          </td>
+
+          <td>
+            <div class="nameLine">
+              <span class="tag ${tagB.cls}">${escapeHtml(tagB.text)}</span>
+              <div>
+                <div style="font-weight:1000;">${escapeHtml(nameB)}</div>
+                <div class="small mono">${escapeHtml(pidB)}</div>
+              </div>
+            </div>
+          </td>
+
+          <td class="center"><span class="mono" style="font-weight:1000;">${escapeHtml(String(thru))}</span></td>
+          <td class="center ${statusCls}">${escapeHtml(statusTxt)}</td>
+          <td class="center"><span class="mono">${escapeHtml(totalStr)}</span></td>
+          <td class="center"><span class="mono">${escapeHtml(avgStr)}</span></td>
+
+          <td class="right">
+            <input class="aliasEdit" placeholder="alias A" value="${escapeAttr(nameA)}"
+              oninput="window.__setAlias('${escapeJs(pidA)}', this.value)" />
+            <input class="aliasEdit" placeholder="alias B" value="${escapeAttr(nameB)}"
+              oninput="window.__setAlias('${escapeJs(pidB)}', this.value)" />
+          </td>
+        </tr>
+      `);
+    }
+
+    document.getElementById('tbody').innerHTML = rows.join('');
+  }
+
+  // exposed for inline handlers
+  window.__setAlias = (pid, v) => {
+    if (!pid) return;
+    setAlias(pid, (v || '').trim());
+  };
+
+  function reloadNow(){ loadMatches(); }
+
+  function toggleAuto(){
+    if (timer){
+      clearInterval(timer);
+      timer = null;
+      setAuto('off');
+      return;
+    }
+    const sec = Math.max(5, Number(refreshEl().value || 20));
+    timer = setInterval(loadMatches, sec * 1000);
+    setAuto(`on (${sec}s)`);
+  }
+
+  // save on change
+  ['api','event','round','refresh'].forEach(id=>{
+    document.getElementById(id).addEventListener('change', ()=>{
+      saveTop();
+      if (timer){ toggleAuto(); toggleAuto(); } // restart with new interval
+    });
   });
 
+  // init
   loadParams();
   loadMatches();
-  // start auto by default
+  // auto on by default
   toggleAuto();
 </script>
 </body>
