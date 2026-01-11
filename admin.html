@@ -24,7 +24,7 @@
       background: radial-gradient(1200px 600px at 50% -10%, #1a2140 0%, var(--bg) 55%);
       color:var(--text);
     }
-    .wrap{ max-width:1000px; margin:0 auto; padding:18px 14px 28px; }
+    .wrap{ max-width:1100px; margin:0 auto; padding:18px 14px 28px; }
     .top{
       display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end;
       border:1px solid var(--line); border-radius:var(--r);
@@ -33,7 +33,8 @@
       padding:14px;
     }
     h1{ margin:0; font-size:22px; }
-    .sub{ color:var(--muted); font-size:13px; line-height:1.35; max-width:650px; }
+    .sub{ color:var(--muted); font-size:13px; line-height:1.35; max-width:760px; }
+    .pills{ display:flex; gap:8px; flex-wrap:wrap; margin-left:auto; }
     .pill{
       border:1px solid var(--line);
       border-radius:999px;
@@ -42,18 +43,19 @@
       color:var(--muted);
       background: rgba(255,255,255,.02);
       white-space:nowrap;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     }
-    .pills{ display:flex; gap:8px; flex-wrap:wrap; margin-left:auto; }
 
     .grid{
       margin-top:14px;
       display:grid;
-      grid-template-columns: 1.2fr .8fr;
+      grid-template-columns: 1.25fr .75fr;
       gap:14px;
     }
-    @media (max-width: 900px){
+    @media (max-width: 960px){
       .grid{ grid-template-columns: 1fr; }
     }
+
     .card{
       border:1px solid var(--line);
       border-radius:var(--r);
@@ -63,6 +65,24 @@
     }
     .card h2{ margin:0 0 8px 0; font-size:16px; }
     .hint{ color:var(--muted); font-size:13px; line-height:1.35; }
+
+    .tabs{ display:flex; gap:8px; flex-wrap:wrap; margin-top:12px; }
+    .tab{
+      padding:10px 12px;
+      border-radius:999px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,.02);
+      color:var(--text);
+      font-weight:1000;
+      cursor:pointer;
+      user-select:none;
+      -webkit-tap-highlight-color: transparent;
+      font-size:14px;
+    }
+    .tab.active{
+      border-color: rgba(59,130,246,.65);
+      box-shadow: 0 0 0 3px rgba(59,130,246,.15) inset;
+    }
 
     label{ display:block; font-weight:900; font-size:12px; margin:12px 0 6px; color:var(--muted); }
     input, textarea, select{
@@ -75,11 +95,21 @@
       font-size:15px;
       outline:none;
     }
-    textarea{ min-height: 260px; resize: vertical; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:13px; }
-    input:focus, textarea:focus{ border-color:#3b82f6; }
+    textarea{
+      min-height: 260px;
+      resize: vertical;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size:13px;
+      line-height:1.35;
+    }
+    input:focus, textarea:focus, select:focus{ border-color:#3b82f6; }
 
     .row{ display:flex; gap:10px; }
     .row>*{ flex:1; }
+    @media (max-width: 520px){
+      .row{ flex-direction:column; }
+    }
+
     button{
       padding:12px 14px;
       border-radius:14px;
@@ -92,6 +122,7 @@
       -webkit-tap-highlight-color: transparent;
     }
     button:active{ transform: translateY(1px); }
+    button:disabled{ opacity:.5; cursor:not-allowed; }
     .btnGood{ border-color: rgba(25,195,125,.55); }
     .btnWarn{ border-color: rgba(255,204,0,.65); }
     .btnBad{ border-color: rgba(255,77,77,.65); }
@@ -105,6 +136,7 @@
     @media (max-width: 520px){
       .mini{ grid-template-columns: 1fr; }
     }
+
     .kpi{
       border:1px solid var(--line);
       border-radius:14px;
@@ -124,13 +156,59 @@
       font-size:13px;
       white-space: pre-wrap;
       line-height:1.35;
-      min-height: 120px;
+      min-height: 140px;
     }
 
     .tiny{ color:var(--muted); font-size:12px; line-height:1.35; margin-top:10px; }
-
     .ok{ color: var(--good); font-weight:1000; }
     .no{ color: var(--bad); font-weight:1000; }
+
+    .list{
+      margin-top:10px;
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:14px;
+      overflow:hidden;
+    }
+    .list .head{
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      padding:10px 12px;
+      background: rgba(0,0,0,.18);
+      color:var(--muted);
+      font-size:12px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+    .list .body{
+      max-height: 280px;
+      overflow:auto;
+    }
+    .item{
+      display:flex;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px 12px;
+      border-top:1px solid rgba(255,255,255,.06);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size:12px;
+      align-items:center;
+    }
+    .item .right{ color:var(--muted); }
+    .tag{
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:4px 10px;
+      font-weight:1000;
+      font-size:12px;
+      background: rgba(255,255,255,.02);
+      white-space:nowrap;
+    }
+    .tag.good{ border-color: rgba(25,195,125,.55); color: var(--good); }
+    .tag.warn{ border-color: rgba(255,204,0,.6); color: var(--warn); }
+    .tag.bad { border-color: rgba(255,77,77,.6); color: var(--bad); }
+
+    .hidden{ display:none !important; }
   </style>
 </head>
 
@@ -141,25 +219,32 @@
     <div>
       <h1>Matchplay Admin</h1>
       <div class="sub">
-        Maak ronde 1 aan vanuit email-paren. De sheet maakt player_id’s + match_id’s en verstuurt mails met scoring-link.
-        E-mails worden <b>niet</b> opgeslagen in Sheets (alleen hash + player_id).
+        R1: plak paren <b>emailA,emailB</b> (of <b>BYE</b>).<br>
+        Volgende rondes: knop “Generate next round” maakt automatisch (winnaar M01 vs winnaar M02, etc).
+        BYE is niet case gevoelig: bye / BYE / Bye werkt.
+      </div>
+      <div class="tabs">
+        <div class="tab active" id="tabR1" onclick="setTab('r1')">R1 setup + Mail</div>
+        <div class="tab" id="tabNext" onclick="setTab('next')">Next round (bracket)</div>
       </div>
     </div>
 
     <div class="pills">
       <span class="pill" id="pillApi">api: —</span>
       <span class="pill" id="pillEvent">event: —</span>
-      <span class="pill" id="pillRound">round: R1</span>
+      <span class="pill" id="pillMode">mode: R1</span>
     </div>
   </div>
 
   <div class="grid">
-    <!-- LEFT: INPUT -->
+    <!-- LEFT -->
     <div class="card">
-      <h2>1) Instellingen</h2>
-      <div class="hint">Vul de API URL (Apps Script /exec), je admin key, event code, en plak paren “emailA,emailB”.</div>
+      <h2 id="titleLeft">1) Instellingen (R1)</h2>
+      <div class="hint" id="hintLeft">
+        Vul API URL + admin key + event code. Plak daarna paren en klik Preview. Daarna “Create + Mail”.
+      </div>
 
-      <label>API URL</label>
+      <label>API URL (Apps Script /exec)</label>
       <input id="api" placeholder="https://script.google.com/macros/s/.../exec" />
 
       <div class="row">
@@ -173,28 +258,75 @@
         </div>
       </div>
 
-      <label>Round</label>
-      <select id="round">
-        <option value="R1" selected>R1 (default)</option>
-      </select>
+      <!-- R1 panel -->
+      <div id="panelR1">
+        <label>Round</label>
+        <select id="round">
+          <option value="R1" selected>R1</option>
+        </select>
 
-      <label>Paren (emailA,emailB) – één per regel</label>
-      <textarea id="pairs" placeholder="a@club.nl,b@club.nl&#10;c@club.nl,d@club.nl"></textarea>
+        <label>Paren (emailA,emailB) – één per regel</label>
+        <textarea id="pairs" placeholder="a@club.nl,b@club.nl&#10;c@club.nl,BYE&#10;d@club.nl,bye"></textarea>
 
-      <div class="row" style="margin-top:12px;">
-        <button class="btnWarn" onclick="preview()">Preview</button>
-        <button class="btnGood" onclick="send()">Create + Mail</button>
+        <div class="row" style="margin-top:12px;">
+          <button class="btnWarn" onclick="previewR1()">Preview</button>
+          <button class="btnGood" onclick="sendR1()">Create + Mail</button>
+        </div>
+
+        <div class="tiny">
+          Scheiding: komma / puntkomma / tab. Lege regels worden genegeerd.
+          BYE is toegestaan als 2e veld (case-insensitive) of 2e veld leeg.
+        </div>
       </div>
 
-      <div class="tiny">
-        Tip: je kan ook “;” of tab gebruiken als scheiding. Lege regels worden genegeerd.
+      <!-- NEXT panel -->
+      <div id="panelNext" class="hidden">
+        <label>Source round</label>
+        <select id="sourceRound">
+          <option value="R1" selected>R1</option>
+          <option value="R2">R2</option>
+          <option value="R3">R3</option>
+          <option value="R4">R4</option>
+          <option value="R5">R5</option>
+          <option value="R6">R6</option>
+        </select>
+
+        <label>Target round</label>
+        <select id="targetRound">
+          <option value="R2" selected>R2</option>
+          <option value="R3">R3</option>
+          <option value="R4">R4</option>
+          <option value="R5">R5</option>
+          <option value="R6">R6</option>
+          <option value="R7">R7</option>
+        </select>
+
+        <div class="row" style="margin-top:12px;">
+          <button class="btnWarn" onclick="previewNext()">Preview winners</button>
+          <button class="btnGood" onclick="generateNext()">Generate next round</button>
+        </div>
+
+        <div class="tiny">
+          Werking: winner(M01) vs winner(M02), winner(M03) vs winner(M04), etc.
+          Als er oneven aantal winners is, krijgt de laatste automatisch een BYE.
+        </div>
+
+        <div class="list">
+          <div class="head">
+            <div>Preview</div>
+            <div id="prevCount">—</div>
+          </div>
+          <div class="body" id="previewList">
+            <div class="item"><div>—</div><div class="right">—</div></div>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- RIGHT: PREVIEW + STATS -->
+    <!-- RIGHT -->
     <div class="card">
       <h2>2) Controle</h2>
-      <div class="hint">Preview laat zien hoeveel matches/players er aangemaakt worden en of de input klopt.</div>
+      <div class="hint">Preview checkt input, telt matches & spelers, en laat errors zien vóór je iets verstuurt.</div>
 
       <div class="mini">
         <div class="kpi">
@@ -218,8 +350,8 @@
       <div class="status" id="status">Status: klaar</div>
 
       <div class="tiny">
-        <span class="ok">Groen</span> = ok. <span class="no">Rood</span> = input fout.
-        Als mails falen: check Apps Script authorisatie (Gmail scopes) en deploy permissies.
+        <span class="ok">Groen</span> = ok. <span class="no">Rood</span> = fout.
+        Als mails falen: run <b>authGmailTest()</b> in Apps Script en redeploy.
       </div>
     </div>
   </div>
@@ -229,51 +361,80 @@
 <script>
   function $(id){ return document.getElementById(id); }
 
+  // ---- UI helpers
   function setStatus(msg){ $('status').textContent = 'Status: ' + msg; }
-  function setPills(){
-    $('pillApi').textContent   = 'api: ' + (truncate($('api').value.trim(), 34) || '—');
-    $('pillEvent').textContent = 'event: ' + ($('eventCode').value.trim() || '—');
-    $('pillRound').textContent = 'round: ' + ($('round').value || 'R1');
-  }
   function truncate(s,n){ s=String(s||''); return s.length>n ? s.slice(0,n-1)+'…' : s; }
 
-  function normEmail(e){
-    return String(e||'').trim().toLowerCase();
+  function setPills(){
+    $('pillApi').textContent   = 'api: ' + (truncate($('api').value.trim(), 40) || '—');
+    $('pillEvent').textContent = 'event: ' + ($('eventCode').value.trim() || '—');
+    const mode = currentTab === 'r1' ? 'R1' : 'NEXT';
+    $('pillMode').textContent  = 'mode: ' + mode;
   }
+
+  let currentTab = 'r1';
+  function setTab(which){
+    currentTab = which;
+    $('tabR1').classList.toggle('active', which==='r1');
+    $('tabNext').classList.toggle('active', which==='next');
+
+    $('panelR1').classList.toggle('hidden', which!=='r1');
+    $('panelNext').classList.toggle('hidden', which!=='next');
+
+    $('titleLeft').textContent = which==='r1' ? '1) Instellingen (R1)' : '1) Instellingen (Next round)';
+    $('hintLeft').textContent  = which==='r1'
+      ? 'Vul API URL + admin key + event code. Plak daarna paren en klik Preview. Daarna “Create + Mail”.'
+      : 'Kies source/target round. Preview toont winners. “Generate” maakt de volgende ronde matches.';
+    setPills();
+  }
+
+  // ---- parsing
+  function normEmail(e){ return String(e||'').trim().toLowerCase(); }
   function isValidEmail(e){
     const x = normEmail(e);
     return x.includes('@') && x.includes('.') && x.length >= 6;
+  }
+  function isBye(v){
+    const s = String(v ?? '').trim().toLowerCase();
+    return s === '' || s === 'bye';
   }
 
   function parsePairs(text){
     const lines = String(text||'').split(/\r?\n/);
     const out = [];
     let rawLines = 0;
-    let invalid = [];
+    const invalid = [];
 
     for (const line of lines){
       const t = line.trim();
       if (!t) continue;
       rawLines++;
 
-      // allow commas, semicolons, tabs, multiple spaces
-      const parts = t.split(/[,\t;]+/).map(x=>x.trim()).filter(Boolean);
-      if (parts.length < 2){
-        invalid.push({ line:t, reason:'geen 2 emails' });
-        continue;
-      }
-      const a = normEmail(parts[0]);
-      const b = normEmail(parts[1]);
+      const parts = t.split(/[,\t;]+/).map(x=>x.trim());
+      const a = parts[0] ?? '';
+      const b = parts[1] ?? '';
 
-      if (!isValidEmail(a) || !isValidEmail(b)){
-        invalid.push({ line:t, reason:'email ongeldig' });
+      if (!isValidEmail(a)){
+        invalid.push({ line:t, reason:'emailA ongeldig' });
         continue;
       }
-      if (a === b){
+
+      if (isBye(b)) {
+        out.push({ email_a: normEmail(a), email_b: 'BYE' });
+        continue;
+      }
+
+      if (!isValidEmail(b)){
+        invalid.push({ line:t, reason:'emailB ongeldig (of gebruik BYE)' });
+        continue;
+      }
+
+      if (normEmail(a) === normEmail(b)){
         invalid.push({ line:t, reason:'zelfde email 2x' });
         continue;
       }
-      out.push({ email_a:a, email_b:b });
+
+      out.push({ email_a: normEmail(a), email_b: normEmail(b) });
     }
 
     return { pairs: out, rawLines, invalid };
@@ -281,7 +442,10 @@
 
   function calcStats(pairs){
     const set = new Set();
-    for (const p of pairs){ set.add(p.email_a); set.add(p.email_b); }
+    for (const p of pairs){
+      set.add(p.email_a);
+      if (!isBye(p.email_b)) set.add(p.email_b);
+    }
     return { matches: pairs.length, players: set.size };
   }
 
@@ -290,7 +454,17 @@
     $('kMatches').textContent = stats.matches;
     $('kPlayers').textContent = stats.players;
     $('kLines').textContent = rawLines;
-    $('kValid').innerHTML = invalid.length ? `<span class="no">NO (${invalid.length})</span>` : `<span class="ok">YES</span>`;
+    $('kValid').innerHTML = invalid.length
+      ? `<span class="no">NO (${invalid.length})</span>`
+      : `<span class="ok">YES</span>`;
+  }
+
+  // ---- API
+  async function apiGet(url){
+    const res = await fetch(url, { method:"GET" });
+    const text = await res.text();
+    let json=null; try{ json=JSON.parse(text); }catch{}
+    return { ok:res.ok, status:res.status, text, json };
   }
 
   async function apiPost(apiUrl, payloadObj){
@@ -303,26 +477,27 @@
       headers: { "Content-Type":"application/x-www-form-urlencoded;charset=UTF-8" },
       body: data.toString()
     });
+
     const text = await res.text();
     let json=null; try{ json=JSON.parse(text); }catch{}
     return { ok: res.ok, status: res.status, text, json };
   }
 
-  function preview(){
-    const api = $('api').value.trim();
-    const eventCode = $('eventCode').value.trim();
-    const round = $('round').value;
-
+  // ---- R1
+  function previewR1(){
     setPills();
 
+    const api = $('api').value.trim();
+    const eventCode = $('eventCode').value.trim();
     const parsed = parsePairs($('pairs').value);
+
     updateKpi(parsed);
 
     if (!api) return setStatus('API URL ontbreekt.');
     if (!eventCode) return setStatus('Event code ontbreekt.');
 
     if (parsed.invalid.length){
-      const top = parsed.invalid.slice(0,8).map(x=>`- ${x.reason}: ${x.line}`).join('\n');
+      const top = parsed.invalid.slice(0,10).map(x=>`- ${x.reason}: ${x.line}`).join('\n');
       setStatus(`Input heeft fouten:\n${top}\n\nFix de regels en probeer opnieuw.`);
       return;
     }
@@ -332,10 +507,12 @@
     }
 
     const stats = calcStats(parsed.pairs);
-    setStatus(`Preview OK.\nMatches: ${stats.matches}\nUnieke spelers: ${stats.players}\nRound: ${round}\nEvent: ${eventCode}`);
+    const byes = parsed.pairs.filter(p=> isBye(p.email_b)).length;
+
+    setStatus(`Preview OK.\nMatches: ${stats.matches}\nUnieke spelers: ${stats.players}\nBYE matches: ${byes}\nRound: R1\nEvent: ${eventCode}`);
   }
 
-  async function send(){
+  async function sendR1(){
     try{
       setPills();
 
@@ -350,11 +527,18 @@
       if (!api) return setStatus('API URL ontbreekt.');
       if (!adminKey) return setStatus('Admin key ontbreekt.');
       if (!eventCode) return setStatus('Event code ontbreekt.');
+
       if (parsed.invalid.length){
-        const top = parsed.invalid.slice(0,8).map(x=>`- ${x.reason}: ${x.line}`).join('\n');
+        const top = parsed.invalid.slice(0,10).map(x=>`- ${x.reason}: ${x.line}`).join('\n');
         return setStatus(`Input heeft fouten:\n${top}`);
       }
       if (!parsed.pairs.length) return setStatus('Geen paren gevonden.');
+
+      // extra safety: confirm
+      const stats = calcStats(parsed.pairs);
+      const byes = parsed.pairs.filter(p=> isBye(p.email_b)).length;
+      const ok = confirm(`R1 aanmaken + mailen?\n\nEvent: ${eventCode}\nMatches: ${stats.matches}\nPlayers: ${stats.players}\nBYE: ${byes}\n\nDoorgaan?`);
+      if (!ok) return setStatus('Geannuleerd.');
 
       setStatus('Versturen… (adminSetupR1)');
 
@@ -378,7 +562,131 @@
     }
   }
 
-  // init from query/localStorage
+  // ---- Next round preview (client side, no new server endpoint needed)
+  async function previewNext(){
+    setPills();
+
+    const api = $('api').value.trim();
+    const eventCode = $('eventCode').value.trim();
+    const sourceRound = $('sourceRound').value;
+    const targetRound = $('targetRound').value;
+
+    if (!api) return setStatus('API URL ontbreekt.');
+    if (!eventCode) return setStatus('Event code ontbreekt.');
+
+    setStatus(`Laden… matches ${eventCode} ${sourceRound}`);
+
+    const r = await apiGet(`${api}?action=listMatches&event_code=${encodeURIComponent(eventCode)}&round=${encodeURIComponent(sourceRound)}`);
+    if (!(r.json && r.json.ok)){
+      setStatus(`❌ listMatches fail (HTTP ${r.status})\n${r.text}`);
+      return;
+    }
+
+    const ms = (r.json.matches || []).slice().sort((a,b)=> (matchNo(a.match_id)-matchNo(b.match_id)));
+    if (!ms.length){
+      $('previewList').innerHTML = `<div class="item"><div>Geen matches gevonden</div><div class="right">—</div></div>`;
+      $('prevCount').textContent = '0';
+      setStatus('Geen matches gevonden voor source round.');
+      return;
+    }
+
+    const winners = [];
+    const missing = [];
+    for (const m of ms){
+      const st = String(m.status || '').toLowerCase();
+      const w = String(m.winner_player_id || '').trim();
+      if (st !== 'finished' && st !== 'done') {
+        missing.push(`${m.match_id} (status=${m.status||'?'})`);
+        continue;
+      }
+      if (!w) missing.push(`${m.match_id} (winner missing)`);
+      else winners.push({ match_id: m.match_id, winner: w });
+    }
+
+    if (missing.length){
+      $('previewList').innerHTML =
+        missing.slice(0,50).map(x=>`<div class="item"><div>${escapeHtml(x)}</div><div class="right"><span class="tag bad">BLOCK</span></div></div>`).join('');
+      $('prevCount').textContent = `${missing.length} issue(s)`;
+      setStatus(`Niet alles klaar.\nFix: status=finished + winner_player_id invullen.\nVoorbeelden:\n- ${missing.slice(0,8).join('\n- ')}`);
+      return;
+    }
+
+    // generate pairs winner(M01) vs winner(M02) etc.
+    const wList = winners.map(x=>x.winner);
+    if (wList.length % 2 === 1) wList.push('BYE');
+
+    const pairs = [];
+    for (let i=0;i<wList.length;i+=2){
+      pairs.push({ a:wList[i], b:wList[i+1] });
+    }
+
+    $('prevCount').textContent = `${pairs.length} match(es) -> ${targetRound}`;
+
+    $('previewList').innerHTML = pairs.map((p, i)=>{
+      const bye = isBye(p.b);
+      return `
+        <div class="item">
+          <div>${escapeHtml(`${eventCode}-${targetRound}-M${String(i+1).padStart(2,'0')} : ${p.a} vs ${bye ? 'BYE' : p.b}`)}</div>
+          <div class="right"><span class="tag ${bye ? 'warn' : 'good'}">${bye ? 'BYE' : 'OK'}</span></div>
+        </div>
+      `;
+    }).join('');
+
+    setStatus(`Preview OK.\nSource: ${sourceRound}\nTarget: ${targetRound}\nWinners: ${winners.length}\nMatches to create: ${pairs.length}`);
+  }
+
+  async function generateNext(){
+    try{
+      setPills();
+
+      const api = $('api').value.trim();
+      const adminKey = $('adminKey').value.trim();
+      const eventCode = $('eventCode').value.trim();
+      const sourceRound = $('sourceRound').value;
+      const targetRound = $('targetRound').value;
+
+      if (!api) return setStatus('API URL ontbreekt.');
+      if (!adminKey) return setStatus('Admin key ontbreekt.');
+      if (!eventCode) return setStatus('Event code ontbreekt.');
+
+      const ok = confirm(`Next round genereren?\n\nEvent: ${eventCode}\nSource: ${sourceRound}\nTarget: ${targetRound}\n\nDoorgaan?`);
+      if (!ok) return setStatus('Geannuleerd.');
+
+      setStatus('Genereren… (generateNextRoundBracket)');
+
+      const payload = {
+        action: "generateNextRoundBracket",
+        admin_key: adminKey,
+        event_code: eventCode,
+        source_round: sourceRound,
+        target_round: targetRound
+      };
+
+      const r = await apiPost(api, payload);
+
+      if (r.json && r.json.ok){
+        setStatus(`✅ Klaar.\nTarget: ${r.json.target_round}\nMatches created: ${r.json.matches_created}\nWinners count: ${r.json.winners_count}`);
+      } else {
+        setStatus(`❌ Fout (HTTP ${r.status}).\n${r.text}`);
+      }
+    }catch(e){
+      setStatus('❌ Fout: ' + (e?.message || e));
+    }
+  }
+
+  // ---- small helpers
+  function matchNo(matchId){
+    const m = String(matchId||'').match(/-M(\d+)\b/i);
+    return m ? Number(m[1]) : 999999;
+  }
+  function escapeHtml(s){
+    return String(s ?? '')
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;');
+  }
+
+  // ---- init
   (function init(){
     const p = new URLSearchParams(location.search);
 
@@ -389,21 +697,20 @@
     $('api').value = api;
     $('eventCode').value = event;
     $('adminKey').value = key;
-    $('round').value = 'R1';
 
     setPills();
     setStatus('Plak paren en klik Preview.');
-  })();
 
-  // persist on change
-  ['api','eventCode','adminKey'].forEach(id=>{
-    $(id).addEventListener('change', ()=>{
-      localStorage.setItem('ad_api', $('api').value.trim());
-      localStorage.setItem('ad_event', $('eventCode').value.trim());
-      localStorage.setItem('ad_key', $('adminKey').value.trim());
-      setPills();
+    // persist on change
+    ['api','eventCode','adminKey'].forEach(id=>{
+      $(id).addEventListener('change', ()=>{
+        localStorage.setItem('ad_api', $('api').value.trim());
+        localStorage.setItem('ad_event', $('eventCode').value.trim());
+        localStorage.setItem('ad_key', $('adminKey').value.trim());
+        setPills();
+      });
     });
-  });
+  })();
 </script>
 </body>
 </html>
