@@ -542,13 +542,14 @@
 
       setStatus('Versturen… (adminSetupR1)');
 
-      const payload = {
-        action: "adminSetupR1",
-        admin_key: adminKey,
-        event_code: eventCode,
-        round: round,
-        pairs: parsed.pairs
-      };
+const payload = {
+  action: "adminSetupR1",
+  admin_key: adminKey,
+  event_code: eventCode,
+  round: round,
+  api_url: api,           // ✅ DIT IS DE TRUC
+  pairs: parsed.pairs
+};
 
       const r = await apiPost(api, payload);
 
