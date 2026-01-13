@@ -14,16 +14,10 @@
 
       --btn:#26324B;
       --btnBorder:#44506A;
-      --btnText:#FFFFFF;
 
-      --good:#0F6A4F;
-      --goodBorder:#1FA67A;
-
-      --warn:#8A6D00;
-      --warnBorder:#FFCC00;
-
-      --bad:#7A1F1F;
-      --badBorder:#FF5C5C;
+      --good:#0F6A4F;   --goodBorder:#1FA67A;
+      --warn:#8A6D00;   --warnBorder:#FFCC00;
+      --bad:#7A1F1F;    --badBorder:#FF5C5C;
 
       --shadow: 0 14px 40px rgba(0,0,0,.45);
       --r:18px;
@@ -119,7 +113,7 @@
       border-radius:14px;
       border:1px solid var(--btnBorder);
       background: var(--btn);
-      color: var(--btnText);
+      color: #fff;
       cursor:pointer;
       font-weight:900;
       width:100%;
@@ -149,7 +143,7 @@
       white-space:pre-wrap;
       font-size:13px;
       color:var(--muted);
-      min-height: 68px;
+      min-height: 78px;
     }
 
     .kpis{
@@ -185,7 +179,7 @@
       letter-spacing:.08em;
       text-transform:uppercase;
     }
-    .list .body{ max-height: 380px; overflow:auto; }
+    .list .body{ max-height: 420px; overflow:auto; }
     .item{
       display:flex; justify-content:space-between; gap:10px;
       padding:10px 12px;
@@ -218,8 +212,8 @@
       <h1>Stableford Admin</h1>
       <div class="sub">
         Invoer per regel: <b>email,hcp,teebox,gender,loopcode</b><br>
-        <b>loopcode</b> bepaalt automatisch holes: <b>WO/OZ/ZW = 18</b> en <b>O/W/Z/N = 9</b><br>
-        Voorbeelden:<br>
+        Loopcode bepaalt holes: <b>WO/OZ/ZW = 18</b> en <b>O/W/Z/N = 9</b>.<br>
+        Voorbeelden:
         <span class="pill">a@club.nl, 12.4, GEEL, H, WO</span>
         <span class="pill">b@club.nl; 22,1; ROOD; D; O</span>
       </div>
@@ -252,7 +246,7 @@
       </div>
 
       <label style="margin-top:12px;">Spelers (email,hcp,teebox,gender,loopcode)</label>
-      <textarea id="players" spellcheck="false" placeholder="simke@vermeertoren.com, 18.0, WIT, H, O
+      <textarea id="players" spellcheck="false" placeholder="simke@club.nl, 18.0, WIT, H, O
 dame@club.nl, 24.3, ROOD, D, WO"></textarea>
 
       <div class="row" style="margin-top:12px;">
@@ -261,12 +255,17 @@ dame@club.nl, 24.3, ROOD, D, WO"></textarea>
       </div>
 
       <div class="status" id="status">Status: plak spelers en klik Preview.</div>
+
+      <div class="hint">
+        Teeboxes: WIT/GEEL/BLAUW/ROOD/ORANJE (kort: W/G/B/R/O). Gender: H of D.
+        Noordwoud (par3/4) kun je als loopcode <b>N</b> gebruiken (9 holes).
+      </div>
     </div>
 
     <!-- RIGHT -->
     <div class="card">
       <h2>2) Preview</h2>
-      <div class="hint">Parsed output (dit sturen we naar Code.gs). Als er fouten zijn: fix eerst de invoer.</div>
+      <div class="hint">Parsed output (dit sturen we naar Code.gs). Fouten? Fix de invoer.</div>
 
       <div class="kpis">
         <div class="kpi"><div class="k">Regels</div><div class="v" id="kLines">0</div></div>
@@ -293,17 +292,19 @@ dame@club.nl, 24.3, ROOD, D, WO"></textarea>
   function setStatus(msg){ $('status').textContent = 'Status: ' + msg; }
   function trunc(s,n){ s=String(s||''); return s.length>n ? s.slice(0,n-1)+'…' : s; }
 
+  // ---- Missing in jouw vorige versie: daarom kreeg je "isValidEmail is not defined"
+  function normEmail(e){ return String(e||'').trim().toLowerCase(); }
+  function isValidEmail(email){
+    const e = normEmail(email);
+    return e.includes('@') && e.includes('.') && e.length >= 6;
+  }
+
   function setPills(parsed){
     $('pillApi').textContent   = 'api: ' + (trunc($('api').value.trim(), 42) || '—');
     $('pillEvent').textContent = 'event: ' + ($('eventCode').value.trim() || '—');
     $('pillCount').textContent = 'spelers: ' + (parsed ? parsed.players.length : '—');
   }
 
-  function normEmail(e){ return String(e||'').trim().toLowerCase(); }
-  function isValidEmail(e){
-    const x = normEmail(e);
-    return x.includes('@') && x.includes('.') && x.length >= 6;
-  }
   function parseHcp(x){
     const t = String(x||'').trim().replace(',', '.');
     const v = Number(t);
@@ -346,8 +347,10 @@ dame@club.nl, 24.3, ROOD, D, WO"></textarea>
   function splitLine(line){
     const t = line.trim();
     if (!t) return [];
+    // comma/semicolon/tab
     let parts = t.split(/[,\t;]+/).map(x=>x.trim()).filter(Boolean);
     if (parts.length >= 5) return parts;
+    // fallback: spaces
     return t.split(/\s+/).map(x=>x.trim()).filter(Boolean);
   }
 
@@ -404,7 +407,7 @@ dame@club.nl, 24.3, ROOD, D, WO"></textarea>
 
   function renderPreview(parsed){
     const items = [];
-    for (const p of parsed.players.slice(0, 400)){
+    for (const p of parsed.players.slice(0, 500)){
       items.push(`
         <div class="item">
           <div>${escapeHtml(p.email)}</div>
@@ -421,7 +424,7 @@ dame@club.nl, 24.3, ROOD, D, WO"></textarea>
 
     if (parsed.invalid.length){
       $('errorsBox').style.display = 'block';
-      const top = parsed.invalid.slice(0, 14).map(x=>`- ${x.reason}: ${x.line}`).join('\n');
+      const top = parsed.invalid.slice(0, 16).map(x=>`- ${x.reason}: ${x.line}`).join('\n');
       $('errorsBox').textContent = 'Fouten:\n' + top;
     } else {
       $('errorsBox').style.display = 'none';
@@ -476,7 +479,10 @@ dame@club.nl, 24.3, ROOD, D, WO"></textarea>
       if (!parsed.players.length) return setStatus('Geen geldige spelers gevonden.');
       if (parsed.invalid.length) return setStatus(`Input heeft fouten (${parsed.invalid.length}).`);
 
-      if (!confirm(`Wedstrijd aanmaken + mailen?\n\nEvent: ${eventCode}\nSpelers: ${parsed.players.length}\n(18: ${parsed.players.filter(p=>p.holes===18).length}, 9: ${parsed.players.filter(p=>p.holes===9).length})\n\nDoorgaan?`)){
+      const n9 = parsed.players.filter(p=>p.holes===9).length;
+      const n18 = parsed.players.filter(p=>p.holes===18).length;
+
+      if (!confirm(`Wedstrijd aanmaken + mailen?\n\nEvent: ${eventCode}\nSpelers: ${parsed.players.length}\n(18: ${n18}, 9: ${n9})\n\nDoorgaan?`)){
         return setStatus('Geannuleerd.');
       }
 
@@ -492,7 +498,7 @@ dame@club.nl, 24.3, ROOD, D, WO"></textarea>
 
       const r = await apiPost(api, payload);
       if (r.json && r.json.ok){
-        setStatus(`✅ Klaar.\nRound: ${r.json.round_id || '—'}\nPlayers: ${r.json.players_created || parsed.players.length}\nMails sent: ${r.json.mails_sent ?? '—'}\nErrors: ${r.json.errors ?? 0}\n\nCheck je mailbox voor admin summary.`);
+        setStatus(`✅ Klaar.\nRound: ${r.json.round_id || '—'}\nPlayers: ${r.json.players_created || parsed.players.length}\nMails sent: ${r.json.mails_sent ?? '—'}\nErrors: ${r.json.errors ?? 0}\n\nAdmin summary is gemaild.`);
       } else {
         setStatus(`❌ Fout (HTTP ${r.status}).\n${r.json?.error || r.text}`);
       }
