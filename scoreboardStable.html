@@ -3,175 +3,508 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
-  <title>Stableford – Scoreboard</title>
+  <title>Stableford – Admin</title>
   <style>
-    :root{--bg:#0b0c10;--card:#11131a;--muted:#9aa3b2;--text:#eef1f7;--line:#262b36;--shadow:0 10px 30px rgba(0,0,0,35);--r:18px;--good:#19c37d}
-    *{box-sizing:border-box}
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:radial-gradient(1200px 600px at 50% -10%, #1a2140 0%, var(--bg) 55%);color:var(--text)}
-    .wrap{max-width:1100px;margin:0 auto;padding:18px 14px 28px}
-    .top{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;border:1px solid var(--line);border-radius:var(--r);
-      background:linear-gradient(180deg, rgba(255,255,255,05), rgba(255,255,255,02));box-shadow:var(--shadow);padding:14px}
-    h1{margin:0;font-size:22px}
-    .sub{color:var(--muted);font-size:13px;line-height:1.35;max-width:760px}
-    .pills{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
-    .pill{border:1px solid var(--line);border-radius:999px;padding:7px 10px;font-size:12px;color:var(--muted);
-      background:rgba(255,255,255,.02);white-space:nowrap;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
-    .card{margin-top:14px;border:1px solid var(--line);border-radius:var(--r);
-      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));box-shadow:var(--shadow);padding:14px}
-    table{width:100%;border-collapse:collapse}
-    th,td{padding:10px 10px;border-bottom:1px solid rgba(255,255,255,.06);text-align:left}
-    th{font-size:12px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
-    td{font-size:14px}
-    .right{text-align:right}
-    .muted{color:var(--muted)}
-    .tag{display:inline-block;border:1px solid rgba(25,195,125,.55);color:var(--good);border-radius:999px;padding:4px 10px;font-weight:900;font-size:12px}
-    .status{margin-top:10px;border:1px solid var(--line);border-radius:16px;padding:12px;background:rgba(0,0,0,25);white-space:pre-wrap;font-size:13px;color:var(--muted)}
+    :root{
+      --bg:#0b0c10;
+      --card:#11131a;
+      --muted:#a8b0bf;
+      --text:#eef1f7;
+      --line:#2a3040;
+      --shadow: 0 10px 30px rgba(0,0,0,45);
+      --r:18px;
+
+      --btn:#1f2636;
+      --btnText:#eef1f7;
+      --btnGood:#0f5b3f;
+      --btnWarn:#6a5600;
+      --btnBad:#5b0f0f;
+      --btnBorder:#3a4358;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: radial-gradient(1200px 600px at 50% -10%, #1a2140 0%, var(--bg) 55%);
+      color:var(--text);
+    }
+    .wrap{ max-width:1100px; margin:0 auto; padding:18px 14px 28px; }
+
+    .top{
+      display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end;
+      border:1px solid var(--line); border-radius:var(--r);
+      background: linear-gradient(180deg, rgba(255,255,255,06), rgba(255,255,255,02));
+      box-shadow: var(--shadow);
+      padding:14px;
+    }
+    h1{ margin:0; font-size:22px; }
+    .sub{ color:var(--muted); font-size:13px; line-height:1.35; max-width:820px; }
+    .pills{ display:flex; gap:8px; flex-wrap:wrap; margin-left:auto; }
+    .pill{
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:7px 10px;
+      font-size:12px;
+      color:var(--muted);
+      background: rgba(255,255,255,.02);
+      white-space:nowrap;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    .grid{
+      margin-top:14px;
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap:14px;
+    }
+    @media (max-width: 960px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+    .card{
+      border:1px solid var(--line);
+      border-radius:var(--r);
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      box-shadow: var(--shadow);
+      padding:16px;
+    }
+    .card h2{ margin:0 0 8px 0; font-size:16px; }
+    .hint{ color:var(--muted); font-size:13px; line-height:1.35; }
+
+    label{ display:block; font-weight:900; font-size:12px; margin-bottom:6px; color:var(--muted); }
+    input, textarea{
+      padding:12px 12px; font-size:16px; border-radius:14px;
+      border:1px solid var(--line); background: rgba(0,0,0,28);
+      color:var(--text); outline:none; width: 100%;
+    }
+    textarea{ min-height: 260px; resize: vertical; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:13px; }
+
+    .row{ display:flex; gap:10px; }
+    .row>*{ flex:1; }
+
+    button{
+      padding:12px 14px; font-size:16px; border-radius:14px;
+      border:1px solid var(--btnBorder);
+      background: var(--btn);
+      color: var(--btnText);
+      cursor:pointer; font-weight:1000;
+      width:100%;
+    }
+    button:active{ transform: translateY(1px); }
+    .btnGood{ background: var(--btnGood); border-color: rgba(25,195,125,.55); }
+    .btnWarn{ background: var(--btnWarn); border-color: rgba(255,204,0,.55); }
+    .btnBad { background: var(--btnBad);  border-color: rgba(255,77,77,.55); }
+
+    .status{
+      margin-top:12px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:12px;
+      background: rgba(0,0,0,25);
+      white-space:pre-wrap;
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    .kpis{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      margin-top:10px;
+    }
+    .kpi{
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:14px;
+      padding:10px 12px;
+      background: rgba(0,0,0,.18);
+    }
+    .kpi .k{ color:var(--muted); font-size:12px; }
+    .kpi .v{ font-size:18px; font-weight:1000; margin-top:4px; }
+    .ok{ color:#19c37d; font-weight:1000; }
+    .no{ color:#ff4d4d; font-weight:1000; }
+
+    .list{
+      margin-top:10px;
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:14px;
+      overflow:hidden;
+    }
+    .list .head{
+      display:flex; justify-content:space-between; align-items:center;
+      padding:10px 12px;
+      background: rgba(0,0,0,18);
+      color:var(--muted);
+      font-size:12px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+    .list .body{ max-height: 320px; overflow:auto; }
+    .item{
+      display:flex; justify-content:space-between; gap:10px;
+      padding:10px 12px;
+      border-top:1px solid rgba(255,255,255,.06);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size:12px;
+      align-items:center;
+    }
+    .item .right{ color:var(--muted); }
+    .tag{
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:4px 10px;
+      font-weight:1000;
+      font-size:12px;
+      background: rgba(255,255,255,02);
+      white-space:nowrap;
+    }
+    .tag.good{ border-color: rgba(25,195,125,.55); color:#19c37d; }
+    .tag.warn{ border-color: rgba(255,204,0,.55); color:#ffcc00; }
   </style>
 </head>
+
 <body>
 <div class="wrap">
+
   <div class="top">
     <div>
-      <h1>Stableford Scoreboard</h1>
-      <div class="sub">Live overzicht. Alias wordt alleen getoond als die lokaal bekend is; anders zie je player_id.</div>
+      <h1>Stableford Admin</h1>
+      <div class="sub">
+        Invoer per regel: <b>email,hcp,teebox,gender,loopcode</b><br/>
+        Loopcode: <b>WO</b>, <b>OZ</b>, <b>ZW</b> (18 holes) of <b>O</b>, <b>W</b>, <b>Z</b>, <b>N/NOORD</b> (9 holes).<br/>
+        Iedereen kan eigen tee/holes hebben. Geen namen in de sheet.
+      </div>
     </div>
+
     <div class="pills">
-      <span class="pill" id="pillRound">round: —</span>
-      <span class="pill" id="pillEvent">event: —</span>
       <span class="pill" id="pillApi">api: —</span>
-      <span class="pill" id="pillAuto">auto: ON</span>
+      <span class="pill" id="pillEvent">event: —</span>
+      <span class="pill" id="pillCount">spelers: —</span>
     </div>
   </div>
 
-  <div class="card">
-    <table>
-      <thead>
-        <tr>
-          <th>Speler</th>
-          <th class="right">Thru</th>
-          <th class="right">Punten</th>
-          <th class="right">Laatste update</th>
-        </tr>
-      </thead>
-      <tbody id="rows">
-        <tr><td colspan="4" class="muted">Laden…</td></tr>
-      </tbody>
-    </table>
-    <div class="status" id="status">Status: laden…</div>
+  <div class="grid">
+    <!-- LEFT -->
+    <div class="card">
+      <h2>1) Setup</h2>
+      <div class="hint">
+        Plak spelers, klik Preview, daarna “Create + Mail”.
+      </div>
+
+      <label>API URL (Apps Script /exec)</label>
+      <input id="api" placeholder="https://script.google.com/macros/s/.../exec" />
+
+      <div class="row" style="margin-top:10px;">
+        <div>
+          <label>Admin key</label>
+          <input id="adminKey" placeholder="(uit CONFIG)" />
+        </div>
+        <div>
+          <label>Event code</label>
+          <input id="eventCode" placeholder="Stablefort-Feb-2026" />
+        </div>
+      </div>
+
+      <label style="margin-top:12px;">Spelers (email,hcp,teebox,gender,loopcode)</label>
+      <textarea id="players" placeholder="a@club.nl, 12.4, GEEL, H, WO
+b@club.nl; 22,1; ROOD; D; OZ
+c@club.nl 8.9 WIT H WO
+d@club.nl 36.0 GEEL D N"></textarea>
+
+      <div class="row" style="margin-top:12px;">
+        <button class="btnWarn" onclick="preview()">Preview</button>
+        <button class="btnGood" onclick="createAndMail()">Create + Mail</button>
+      </div>
+
+      <div class="status" id="status">Status: klaar</div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="card">
+      <h2>2) Preview</h2>
+      <div class="hint">We tonen wat we server-side gaan sturen. Holes worden afgeleid uit loopcode.</div>
+
+      <div class="kpis">
+        <div class="kpi"><div class="k">Regels</div><div class="v" id="kLines">0</div></div>
+        <div class="kpi"><div class="k">Geldig</div><div class="v" id="kValid"><span class="no">NO</span></div></div>
+        <div class="kpi"><div class="k">Unieke emails</div><div class="v" id="kUnique">0</div></div>
+        <div class="kpi"><div class="k">18 / 9 holes</div><div class="v" id="kSplit">0 / 0</div></div>
+      </div>
+
+      <div class="list">
+        <div class="head"><div>Parsed</div><div id="prevCount">0</div></div>
+        <div class="body" id="previewList">
+          <div class="item"><div>—</div><div class="right">—</div></div>
+        </div>
+      </div>
+
+      <div class="status" id="errorsBox" style="display:none;"></div>
+    </div>
   </div>
+
 </div>
 
 <script>
-  const qs = new URLSearchParams(location.search);
-  const api = qs.get('api') || '';
-  const roundId = qs.get('round_id') || qs.get('round') || '';
-  const eventCode = qs.get('event_code') || qs.get('event') || '';
-  const myPid = qs.get('pid') || '';
-  const myAliasFromUrl = qs.get('alias') || '';
-
   function $(id){ return document.getElementById(id); }
-  function trunc(s,n){ s=String(s||''); return s.length>n?s.slice(0,n-1)+'…':s; }
-  function setStatus(s){ $('status').textContent = 'Status: ' + s; }
+  function setStatus(msg){ $('status').textContent = 'Status: ' + msg; }
 
-  function aliasKey(pid){
-    return `sf_alias:${eventCode || 'EV'}:${pid || 'P'}`;
-  }
-  function getAliasFor(pid){
-    // alleen lokaal bekend; en URL-alias alleen voor eigen pid
-    if (pid && myPid && pid === myPid && myAliasFromUrl) return myAliasFromUrl;
-    const a = localStorage.getItem(aliasKey(pid));
-    return a || '';
+  function trunc(s, n){ s=String(s||''); return s.length>n ? s.slice(0,n-1)+'…' : s; }
+  function setPills(parsed){
+    $('pillApi').textContent   = 'api: ' + (trunc($('api').value.trim(), 40) || '—');
+    $('pillEvent').textContent = 'event: ' + ($('eventCode').value.trim() || '—');
+    $('pillCount').textContent = 'spelers: ' + (parsed ? parsed.players.length : '—');
   }
 
-  async function apiGet(params){
-    const u = new URL(api);
-    Object.entries(params).forEach(([k,v])=> u.searchParams.set(k, String(v)));
-    const res = await fetch(u.toString());
-    const text = await res.text();
-    let json=null; try{ json=JSON.parse(text); }catch{}
-    return {res, text, json};
+  function normEmail(e){ return String(e||'').trim().toLowerCase(); }
+  function isValidEmail(e){
+    const x = normEmail(e);
+    return x.includes('@') && x.includes('.') && x.length >= 6;
+  }
+  function parseHcp(x){
+    const t = String(x||'').trim().replace(',', '.');
+    const v = Number(t);
+    return isFinite(v) ? v : null;
+  }
+  function parseGender(x){
+    const s = String(x||'').trim().toUpperCase();
+    if (s === 'H' || s === 'HEREN' || s === 'M') return 'H';
+    if (s === 'D' || s === 'DAMES' || s === 'V') return 'D';
+    return null;
+  }
+  function parseTee(x){
+    const s = String(x||'').trim().toUpperCase();
+    // accept first letter variants too
+    if (s === 'WIT' || s === 'W') return 'WIT';
+    if (s === 'GEEL' || s === 'G') return 'GEEL';
+    if (s === 'BLAUW' || s === 'B') return 'BLAUW';
+    if (s === 'ROOD' || s === 'R') return 'ROOD';
+    if (s === 'ORANJE' || s === 'O') return 'ORANJE';
+    return null;
+  }
+  function parseLoopCode(x){
+    const s = String(x||'').trim().toUpperCase();
+    if (!s) return null;
+    // 18-hole combos
+    if (s === 'WO' || s === 'WESTOOST' || s === 'WEST-OOST') return { loop_id:'WEST-OOST', holes:18 };
+    if (s === 'OZ' || s === 'OOSTZUID' || s === 'OOST-ZUID') return { loop_id:'OOST-ZUID', holes:18 };
+    if (s === 'ZW' || s === 'ZUIDWEST' || s === 'ZUID-WEST') return { loop_id:'ZUID-WEST', holes:18 };
+    // 9-hole loops
+    if (s === 'O' || s === 'OOST' ) return { loop_id:'OOST', holes:9 };
+    if (s === 'W' || s === 'WEST' ) return { loop_id:'WEST', holes:9 };
+    if (s === 'Z' || s === 'ZUID' ) return { loop_id:'ZUID', holes:9 };
+    if (s === 'N' || s === 'NOORD' || s === 'NOORDWOUD') return { loop_id:'NOORD', holes:9 };
+    return null;
   }
 
-  function fmtAgo(iso){
-    const t = Date.parse(iso || '');
-    if (!t) return '—';
-    const s = Math.max(0, Math.floor((Date.now() - t)/1000));
-    if (s < 60) return s + 's';
-    const m = Math.floor(s/60);
-    if (m < 60) return m + 'm';
-    const h = Math.floor(m/60);
-    return h + 'u';
+  function splitLine(line){
+    // accept comma/semicolon/tab or whitespace groups
+    const t = line.trim();
+    if (!t) return [];
+    let parts = t.split(/[,\t;]+/).map(x=>x.trim()).filter(Boolean);
+    if (parts.length >= 5) return parts;
+    // fallback: whitespace split
+    parts = t.split(/\s+/).map(x=>x.trim()).filter(Boolean);
+    return parts;
   }
 
-  function render(state){
-    const players = Array.isArray(state.players) ? state.players : [];
-    // verwacht: server geeft totals/thru/last_update per speler in state.scoreboard[]
-    const sb = Array.isArray(state.scoreboard) ? state.scoreboard : [];
+  function parsePlayers(text){
+    const lines = String(text||'').split(/\r?\n/);
+    const out = [];
+    const invalid = [];
+    let rawLines = 0;
 
-    const byPid = new Map(sb.map(x => [x.player_id, x]));
-    // sorteervolgorde: meeste punten eerst
-    const order = players
-      .map(p => p.player_id)
-      .filter(Boolean)
-      .sort((a,b)=>{
-        const A = byPid.get(a) || {};
-        const B = byPid.get(b) || {};
-        return (Number(B.total_points||0) - Number(A.total_points||0)) || (String(a).localeCompare(String(b)));
+    for (const line of lines){
+      const t = line.trim();
+      if (!t) continue;
+      rawLines++;
+
+      const parts = splitLine(t);
+      // expected: email,hcp,teebox,gender,loopcode
+      const email = parts[0] ?? '';
+      const hcp = parts[1] ?? '';
+      const tee = parts[2] ?? '';
+      const gender = parts[3] ?? '';
+      const loopcode = parts[4] ?? '';
+
+      if (!isValidEmail(email)){
+        invalid.push({ line:t, reason:'email ongeldig' });
+        continue;
+      }
+      const hv = parseHcp(hcp);
+      if (hv === null){
+        invalid.push({ line:t, reason:'hcp ongeldig' });
+        continue;
+      }
+      const tv = parseTee(tee);
+      if (!tv){
+        invalid.push({ line:t, reason:'teebox ongeldig (WIT/GEEL/BLAUW/ROOD/ORANJE)' });
+        continue;
+      }
+      const gv = parseGender(gender);
+      if (!gv){
+        invalid.push({ line:t, reason:'gender mist (H/D)' });
+        continue;
+      }
+      const lv = parseLoopCode(loopcode);
+      if (!lv){
+        invalid.push({ line:t, reason:'loopcode ongeldig (WO/OZ/ZW/O/W/Z/N)' });
+        continue;
+      }
+
+      out.push({
+        email: normEmail(email),
+        hcp: hv,
+        tee: tv,
+        gender: gv,
+        loop_id: lv.loop_id,
+        holes: lv.holes
       });
+    }
 
-    const rows = order.map(pid=>{
-      const s = byPid.get(pid) || {};
-      const alias = getAliasFor(pid);
-      const label = alias ? `${alias} ` : '';
-      const shown = alias ? `${alias} (${pid})` : pid;
+    return { players: out, rawLines, invalid };
+  }
 
-      return `
-        <tr>
-          <td>${escapeHtml(shown)}</td>
-          <td class="right">${escapeHtml(String(s.thru ?? '—'))}</td>
-          <td class="right"><span class="tag">${escapeHtml(String(s.total_points ?? 0))}</span></td>
-          <td class="right muted">${escapeHtml(fmtAgo(s.last_update_ts || s.updated_at || ''))}</td>
-        </tr>
-      `;
-    });
+  function updateKpi(parsed){
+    $('kLines').textContent = String(parsed.rawLines);
+    $('kUnique').textContent = String(new Set(parsed.players.map(p=>p.email)).size);
 
-    $('rows').innerHTML = rows.length ? rows.join('') : `<tr><td colspan="4" class="muted">Geen spelers</td></tr>`;
+    const n9 = parsed.players.filter(p=>p.holes===9).length;
+    const n18 = parsed.players.filter(p=>p.holes===18).length;
+    $('kSplit').textContent = `${n18} / ${n9}`;
+
+    $('kValid').innerHTML = parsed.invalid.length
+      ? `<span class="no">NO (${parsed.invalid.length})</span>`
+      : `<span class="ok">YES</span>`;
   }
 
   function escapeHtml(s){
-    return String(s ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+    return String(s ?? '')
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;');
   }
 
-  let timer = null;
-  let auto = true;
-  const refreshMs = 5000;
+  function renderPreview(parsed){
+    const items = [];
+    for (const p of parsed.players.slice(0, 300)){
+      items.push(`
+        <div class="item">
+          <div>${escapeHtml(p.email)}</div>
+          <div class="right">
+            <span class="tag good">${escapeHtml(p.loop_id)} ${escapeHtml(String(p.holes))}</span>
+            <span class="tag warn">${escapeHtml(p.tee)} ${escapeHtml(p.gender)} | hcp ${escapeHtml(p.hcp.toFixed(1))}</span>
+          </div>
+        </div>
+      `);
+    }
+    if (!items.length) items.push(`<div class="item"><div>Geen spelers</div><div class="right">—</div></div>`);
+    $('previewList').innerHTML = items.join('');
+    $('prevCount').textContent = String(parsed.players.length);
 
-  async function tick(){
-    try{
-      if (!api) return setStatus('API ontbreekt (?api=...)');
-      if (!roundId) return setStatus('round_id ontbreekt (?round_id=...)');
-
-      const r = await apiGet({ action:'roundState', round_id: roundId });
-      if (!r.json || !r.json.ok) return setStatus('roundState fout: ' + (r.json?.error || r.text));
-
-      render(r.json);
-      setStatus(`OK. Laatste refresh: ${new Date().toLocaleTimeString()}`);
-    }catch(e){
-      setStatus('Fout: ' + (e?.message || e));
+    if (parsed.invalid.length){
+      $('errorsBox').style.display = 'block';
+      const top = parsed.invalid.slice(0, 12).map(x=>`- ${x.reason}: ${x.line}`).join('\n');
+      $('errorsBox').textContent = 'Fouten:\n' + top;
+    } else {
+      $('errorsBox').style.display = 'none';
+      $('errorsBox').textContent = '';
     }
   }
 
-  function init(){
-    $('pillRound').textContent = 'round: ' + (roundId || '—');
-    $('pillEvent').textContent = 'event: ' + (eventCode || '—');
-    $('pillApi').textContent = 'api: ' + (trunc(api,40) || '—');
-
-    tick();
-    timer = setInterval(()=>{ if(auto) tick(); }, refreshMs);
+  async function apiPost(apiUrl, payloadObj){
+    const data = new URLSearchParams();
+    data.set('payload', JSON.stringify(payloadObj));
+    const res = await fetch(apiUrl, {
+      method: "POST",
+      headers: { "Content-Type":"application/x-www-form-urlencoded;charset=UTF-8" },
+      body: data.toString()
+    });
+    const text = await res.text();
+    let json=null; try{ json=JSON.parse(text); }catch{}
+    return { ok: res.ok, status: res.status, text, json };
   }
 
-  init();
+  function preview(){
+    const parsed = parsePlayers($('players').value);
+    updateKpi(parsed);
+    renderPreview(parsed);
+    setPills(parsed);
+
+    const api = $('api').value.trim();
+    const eventCode = $('eventCode').value.trim();
+
+    if (!api) return setStatus('API URL ontbreekt.');
+    if (!eventCode) return setStatus('Event code ontbreekt.');
+    if (!parsed.players.length) return setStatus('Geen geldige spelers gevonden.');
+    if (parsed.invalid.length) return setStatus(`Input heeft fouten (${parsed.invalid.length}). Check rechts.`);
+
+    setStatus(`Preview OK.\nSpelers: ${parsed.players.length}\nUniek: ${new Set(parsed.players.map(p=>p.email)).size}\nMix: ${parsed.players.filter(p=>p.holes===18).length}x18 & ${parsed.players.filter(p=>p.holes===9).length}x9`);
+  }
+
+  async function createAndMail(){
+    try{
+      const parsed = parsePlayers($('players').value);
+      updateKpi(parsed);
+      renderPreview(parsed);
+      setPills(parsed);
+
+      const api = $('api').value.trim();
+      const adminKey = $('adminKey').value.trim();
+      const eventCode = $('eventCode').value.trim();
+
+      if (!api) return setStatus('API URL ontbreekt.');
+      if (!adminKey) return setStatus('Admin key ontbreekt.');
+      if (!eventCode) return setStatus('Event code ontbreekt.');
+      if (!parsed.players.length) return setStatus('Geen geldige spelers gevonden.');
+      if (parsed.invalid.length) return setStatus(`Input heeft fouten (${parsed.invalid.length}).`);
+
+      const ok = confirm(
+        `Wedstrijd aanmaken + mailen?\n\nEvent: ${eventCode}\nSpelers: ${parsed.players.length}\n(18: ${parsed.players.filter(p=>p.holes===18).length}, 9: ${parsed.players.filter(p=>p.holes===9).length})\n\nDoorgaan?`
+      );
+      if (!ok) return setStatus('Geannuleerd.');
+
+      setStatus('Versturen… (adminCreateRoundMixed)');
+
+      const payload = {
+        action: "adminCreateRoundMixed",
+        admin_key: adminKey,
+        event_code: eventCode,
+        api_url: api,
+        players: parsed.players // [{email,hcp,tee,gender,loop_id,holes}]
+      };
+
+      const r = await apiPost(api, payload);
+      if (r.json && r.json.ok){
+        setStatus(`✅ Klaar.\nRound: ${r.json.round_id || '—'}\nPlayers: ${r.json.players_created || parsed.players.length}\nMails sent: ${r.json.mails_sent ?? '—'}\nErrors: ${r.json.errors ?? 0}\n\nCheck je mailbox voor admin summary.`);
+      } else {
+        setStatus(`❌ Fout (HTTP ${r.status}).\n${r.text}`);
+      }
+    }catch(e){
+      setStatus('❌ Fout: ' + (e?.message || e));
+    }
+  }
+
+  (function init(){
+    const p = new URLSearchParams(location.search);
+
+    const api = p.get('api') || localStorage.getItem('adS_api') || '';
+    const event = p.get('event_code') || localStorage.getItem('adS_event') || '';
+    const key = localStorage.getItem('adS_key') || '';
+
+    $('api').value = api;
+    $('eventCode').value = event;
+    $('adminKey').value = key;
+
+    ['api','eventCode','adminKey'].forEach(id=>{
+      $(id).addEventListener('change', ()=>{
+        localStorage.setItem('adS_api', $('api').value.trim());
+        localStorage.setItem('adS_event', $('eventCode').value.trim());
+        localStorage.setItem('adS_key', $('adminKey').value.trim());
+        setPills(parsePlayers($('players').value));
+      });
+    });
+
+    setPills(parsePlayers($('players').value));
+    setStatus('Plak spelers en klik Preview.');
+  })();
 </script>
 </body>
 </html>
-
