@@ -8,14 +8,12 @@
     :root{
       --bg:#070A12;
       --card:#0E1422;
-      --card2:#0B1020;
       --line:#24304A;
       --text:#F3F6FF;
       --muted:#A7B1C8;
 
       --btn:#26324B;
       --btnBorder:#44506A;
-      --btnText:#FFFFFF;
 
       --good:#0F6A4F;
       --goodBorder:#1FA67A;
@@ -29,7 +27,6 @@
       --shadow: 0 14px 40px rgba(0,0,0,.45);
       --r:18px;
     }
-
     *{ box-sizing:border-box; }
     body{
       margin:0;
@@ -40,8 +37,7 @@
         radial-gradient(900px 600px at 80% 120%, #0f5b3f55 0%, rgba(15,91,63,0) 55%),
         var(--bg);
     }
-
-    .wrap{ max-width:1100px; margin:0 auto; padding:18px 14px 28px; }
+    .wrap{ max-width:980px; margin:0 auto; padding:18px 14px 28px; }
 
     .top{
       display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end;
@@ -65,14 +61,7 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     }
 
-    .grid{
-      margin-top:14px;
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:14px;
-    }
-    @media (max-width: 960px){ .grid{ grid-template-columns:1fr; } }
-
+    .grid{ margin-top:14px; display:grid; grid-template-columns:1fr; gap:14px; }
     .card{
       border:1px solid var(--line);
       border-radius:var(--r);
@@ -80,17 +69,15 @@
       box-shadow: var(--shadow);
       padding:16px;
     }
-
     .card h2{ margin:0 0 8px 0; font-size:16px; }
 
     label{
       display:block;
-      font-weight:800;
+      font-weight:900;
       font-size:12px;
       margin-bottom:6px;
       color:var(--muted);
     }
-
     input, select{
       width:100%;
       padding:12px 12px;
@@ -101,14 +88,13 @@
       color:var(--text);
       outline:none;
     }
-
     input:focus, select:focus{
       border-color: var(--goodBorder);
       box-shadow: 0 0 0 2px rgba(31,166,122,.25);
     }
 
-    .row{ display:flex; gap:10px; }
-    .row>*{ flex:1; }
+    .row{ display:flex; gap:10px; flex-wrap:wrap; }
+    .row>*{ flex:1; min-width: 200px; }
 
     button{
       padding:12px 14px;
@@ -116,9 +102,9 @@
       border-radius:14px;
       border:1px solid var(--btnBorder);
       background: var(--btn);
-      color: var(--btnText);
+      color: #fff;
       cursor:pointer;
-      font-weight:900;
+      font-weight:1000;
       width:100%;
     }
     button:hover{ filter: brightness(1.08); }
@@ -131,12 +117,10 @@
       filter:none;
       transform:none;
     }
-
     .btnGood{ background: var(--good); border-color: var(--goodBorder); }
     .btnWarn{ background: var(--warn); border-color: var(--warnBorder); }
     .btnBad { background: var(--bad);  border-color: var(--badBorder); }
 
-    .hint{ color:var(--muted); font-size:12px; line-height:1.35; margin-top:10px; }
     .status{
       margin-top:12px;
       border:1px solid var(--line);
@@ -146,7 +130,7 @@
       white-space:pre-wrap;
       font-size:13px;
       color:var(--muted);
-      min-height: 52px;
+      min-height: 56px;
     }
 
     .tinyRow{
@@ -160,6 +144,22 @@
       background: rgba(0,0,0,.18);
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     }
+
+    .scoreBox{
+      margin-top:12px;
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+    }
+    @media (max-width: 700px){ .scoreBox{ grid-template-columns:1fr; } }
+    .scoreCard{
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:16px;
+      padding:12px;
+      background: rgba(0,0,0,.18);
+    }
+    .scoreCard .k{ color:var(--muted); font-size:12px; }
+    .scoreCard .v{ font-size:22px; font-weight:1100; margin-top:4px; }
   </style>
 </head>
 
@@ -169,7 +169,7 @@
     <div>
       <h1>Stableford Live Scoring</h1>
       <div class="sub">
-        Vul je roepnaam in (blijft alleen op je toestel). Check-in en voer per hole je slagen in.
+        Eerst check-in. Daarna voer je per hole je slagen in. Na elke submit ga je automatisch door naar de volgende hole.
       </div>
     </div>
     <div class="pills">
@@ -180,32 +180,12 @@
   </div>
 
   <div class="grid">
-    <!-- Alias card -->
     <div class="card">
-      <h2>1) Jouw roepnaam</h2>
-
-      <label>Roepsnaam (niet opgeslagen in sheet)</label>
-      <input id="alias" placeholder="bijv. Simke / Tiger / 'die met die putter'" />
-
-      <div class="row" style="margin-top:10px;">
-        <button class="btnWarn" onclick="saveAlias()">Alias opslaan (lokaal)</button>
-        <button class="btnGood" onclick="openScoreboard()">Open Scoreboard</button>
-      </div>
-
-      <div class="hint">
-        Tip: het clubhuis-scoreboard ziet geen roepnamen tenzij je ze server-side opslaat.
-      </div>
-
-      <div class="status" id="status">Status: laden…</div>
-    </div>
-
-    <!-- Scoring card -->
-    <div class="card">
-      <h2>2) Check-in & Scoren</h2>
-
+      <h2>1) Check-in</h2>
       <div class="row">
         <button class="btnGood" id="btnCheckin" onclick="checkin()">Check-in</button>
-        <button class="btnWarn" onclick="refreshRound()">Refresh</button>
+        <button class="btnWarn" onclick="refresh()">Refresh</button>
+        <button class="btnWarn" onclick="openScoreboard()">Open Scoreboard</button>
       </div>
 
       <div class="tinyRow">
@@ -215,25 +195,40 @@
         <span class="kv" id="kvPHcp">play_hcp: —</span>
       </div>
 
-      <div class="row" style="margin-top:12px;">
+      <div class="status" id="status">Status: laden…</div>
+    </div>
+
+    <div class="card">
+      <h2>2) Score invoeren</h2>
+
+      <div class="row">
         <div>
           <label>Hole</label>
-          <select id="hole"></select>
+          <select id="hole" disabled></select>
         </div>
         <div>
           <label>Slagen</label>
-          <input id="strokes" inputmode="numeric" placeholder="bijv. 5" />
+          <input id="strokes" inputmode="numeric" placeholder="bijv. 5" disabled />
         </div>
       </div>
 
       <div class="row" style="margin-top:12px;">
-        <button class="btnGood" onclick="submitScore()">Submit hole</button>
-        <button class="btnBad" onclick="clearLocal()">Reset alias lokaal</button>
+        <!-- BELANGRIJK: blijft rood totdat succesvol verstuurd -->
+        <button class="btnBad" id="btnSubmit" onclick="submitScore()" disabled>Submit (wacht op invoer)</button>
       </div>
 
-      <div class="hint">
-        GPS wordt meegegeven als CONFIG dit vraagt. Marker is uitgeschakeld.
+      <div class="scoreBox">
+        <div class="scoreCard">
+          <div class="k">Jouw Stableford punten</div>
+          <div class="v" id="myPoints">—</div>
+        </div>
+        <div class="scoreCard">
+          <div class="k">Thru</div>
+          <div class="v" id="myThru">—</div>
+        </div>
       </div>
+
+      <div class="status" id="scoreStatus">Nog niet ingecheckt.</div>
     </div>
   </div>
 </div>
@@ -248,45 +243,31 @@
 
   function $(id){ return document.getElementById(id); }
   function trunc(s,n){ s=String(s||''); return s.length>n ? s.slice(0,n-1)+'…' : s; }
-  function setStatus(s){ $('status').textContent = 'Status: ' + s; }
 
-  function aliasKey(){ return `sf_alias:${eventCode || 'EV'}:${pid || 'P'}`; }
-  function loadAlias(){
-    const fromUrl = qs.get('alias');
-    if (fromUrl) return fromUrl;
-    return localStorage.getItem(aliasKey()) || '';
-  }
-  function saveAlias(){
-    const a = $('alias').value.trim();
-    if (!a) return setStatus('Alias leeg.');
-    localStorage.setItem(aliasKey(), a);
-    setStatus(`Alias opgeslagen op dit toestel: "${a}"`);
-  }
-  function clearLocal(){
-    localStorage.removeItem(aliasKey());
-    $('alias').value = '';
-    setStatus('Alias lokaal verwijderd.');
-  }
+  function setStatus(msg){ $('status').textContent = 'Status: ' + msg; }
+  function setScoreStatus(msg){ $('scoreStatus').textContent = msg; }
 
-  function scoreboardUrl(){
-    const base = (location.href.includes('/indexStable.html'))
-      ? location.href.replace('/indexStable.html', '/scoreboardStable.html')
-      : (location.origin + location.pathname.replace(/\/[^\/]*$/, '/scoreboardStable.html'));
-
-    const u = new URL(base);
-    if (api) u.searchParams.set('api', api);
-    if (eventCode) u.searchParams.set('event_code', eventCode);
-    if (roundId) u.searchParams.set('round_id', roundId);
-    if (pid) u.searchParams.set('pid', pid);
-    const a = $('alias').value.trim() || loadAlias();
-    if (a) u.searchParams.set('alias', a);
-    return u.toString();
-  }
-
-  function openScoreboard(){
-    if ($('alias').value.trim()) saveAlias();
-    window.open(scoreboardUrl(), '_blank');
-    setStatus('Scoreboard geopend (nieuw tabblad).');
+  function setSubmitState(state, label){
+    // state: "disabled" | "ready" | "sending"
+    const btn = $('btnSubmit');
+    if (state === 'disabled'){
+      btn.disabled = true;
+      btn.className = 'btnBad';
+      btn.textContent = label || 'Submit (wacht op invoer)';
+      return;
+    }
+    if (state === 'ready'){
+      btn.disabled = false;
+      btn.className = 'btnBad'; // blijft rood totdat verstuurd
+      btn.textContent = label || 'Submit';
+      return;
+    }
+    if (state === 'sending'){
+      btn.disabled = true;
+      btn.className = 'btnWarn';
+      btn.textContent = label || 'Versturen…';
+      return;
+    }
   }
 
   async function apiPost(payloadObj){
@@ -344,33 +325,48 @@
 
   let cfg = { gps_timeout_seconds: 5, gps_enable_high_accuracy: false, gps_on_score_submit: true };
   async function loadConfig(){
-    if (!api) return;
     const r = await apiGet({ action:'config' });
     if (r.json && r.json.ok && r.json.config){
       cfg = Object.assign(cfg, r.json.config);
     }
   }
 
-  function setPlayerMeta(me){
+  function scoreboardUrl(){
+    const base = (location.href.includes('/indexStable.html'))
+      ? location.href.replace('/indexStable.html', '/scoreboardStable.html')
+      : (location.origin + location.pathname.replace(/\/[^\/]*$/, '/scoreboardStable.html'));
+    const u = new URL(base);
+    if (api) u.searchParams.set('api', api);
+    if (eventCode) u.searchParams.set('event_code', eventCode);
+    if (roundId) u.searchParams.set('round_id', roundId);
+    return u.toString();
+  }
+  function openScoreboard(){ window.open(scoreboardUrl(), '_blank'); }
+
+  let me = null;
+  let checkedIn = false;
+  let holes = 18;
+  let currentHole = 1;
+
+  function updateMeta(){
     $('kvLoop').textContent = 'loop: ' + (me?.loop_id || '—');
     $('kvTee').textContent = 'tee: ' + (me?.tee || '—');
     $('kvHoles').textContent = 'holes: ' + (me?.holes || '—');
     $('kvPHcp').textContent = 'play_hcp: ' + (me?.playing_hcp ?? '—');
   }
 
-  async function refreshRound(){
-    if (!api) return setStatus('API ontbreekt in URL (?api=...)');
-    if (!roundId) return setStatus('round_id ontbreekt in URL (?round_id=...)');
+  function enableScoringUI(on){
+    $('hole').disabled = !on;
+    $('strokes').disabled = !on;
+    if (!on){
+      setSubmitState('disabled', 'Submit (wacht op invoer)');
+    } else {
+      // we laten submit pas "ready" worden als strokes ingevuld is
+      validateReady();
+    }
+  }
 
-    const r = await apiGet({ action:'roundState', round_id: roundId });
-    if (!r.json || !r.json.ok) return setStatus('roundState fout: ' + (r.json?.error || r.text));
-
-    const players = Array.isArray(r.json.players) ? r.json.players : [];
-    const me = players.find(p => p.player_id === pid) || null;
-    setPlayerMeta(me);
-
-    const holes = Number(me?.holes || r.json.round?.holes || 18);
-
+  function fillHoleSelect(){
     $('hole').innerHTML = '';
     for (let h=1; h<=holes; h++){
       const opt = document.createElement('option');
@@ -378,11 +374,66 @@
       opt.textContent = String(h);
       $('hole').appendChild(opt);
     }
+  }
 
-    const checked = String(me?.checked_in || '').toUpperCase() === 'TRUE';
-    $('btnCheckin').disabled = checked;
+  function setCurrentHole(h){
+    currentHole = Math.min(Math.max(1, h), holes);
+    $('hole').value = String(currentHole);
+    $('strokes').value = '';
+    validateReady();
+    setScoreStatus(`Vul slagen in voor hole ${currentHole} en druk op Submit.`);
+  }
 
-    setStatus(`Round geladen. Jij: ${pid} | ${checked ? 'ingecheckt' : 'niet ingecheckt'}`);
+  function validateReady(){
+    if (!checkedIn) return setSubmitState('disabled', 'Submit (eerst check-in)');
+    const s = Number(String($('strokes').value||'').trim());
+    const ok = (isFinite(s) && s >= 1 && s <= 25);
+    if (ok) setSubmitState('ready', `Submit hole ${$('hole').value}`);
+    else setSubmitState('disabled', 'Submit (vul slagen in)');
+  }
+
+  function updateMyPoints(total, thru){
+    $('myPoints').textContent = (total ?? '—');
+    $('myThru').textContent = (thru ?? '—');
+  }
+
+  async function refresh(){
+    if (!api) return setStatus('API ontbreekt in URL (?api=...)');
+    if (!roundId) return setStatus('round_id ontbreekt in URL (?round_id=...)');
+
+    const r = await apiGet({ action:'roundState', round_id: roundId });
+    if (!r.json || !r.json.ok) return setStatus('roundState fout: ' + (r.json?.error || r.text));
+
+    const players = Array.isArray(r.json.players) ? r.json.players : [];
+    me = players.find(p => p.player_id === pid) || null;
+
+    checkedIn = String(me?.checked_in || '').toUpperCase() === 'TRUE';
+    holes = Number(me?.holes || r.json.round?.holes || 18) || 18;
+
+    updateMeta();
+    fillHoleSelect();
+
+    $('btnCheckin').disabled = checkedIn;
+
+    // punten uit scoreboard (komt uit STABLEFORD)
+    const sb = Array.isArray(r.json.scoreboard) ? r.json.scoreboard : [];
+    const myRow = sb.find(x => x.player_id === pid);
+    updateMyPoints(myRow?.total_points, myRow?.thru);
+
+    if (!checkedIn){
+      enableScoringUI(false);
+      setStatus(`Round geladen. Jij: ${pid} | niet ingecheckt`);
+      setScoreStatus('Nog niet ingecheckt. Eerst check-in.');
+      return;
+    }
+
+    enableScoringUI(true);
+    setStatus(`Round geladen. Jij: ${pid} | ingecheckt`);
+
+    // bepaal start hole: als thru bekend is → volgende hole, anders 1
+    const thru = Number(myRow?.thru || 0);
+    const next = Math.min(thru + 1, holes);
+    setCurrentHole(next || 1);
   }
 
   async function checkin(){
@@ -404,23 +455,22 @@
 
     const r = await apiPost(payload);
     if (r.json && r.json.ok){
-      setStatus('✅ Check-in OK.');
-      await refreshRound();
+      alert('✅ Check-in gelukt.');
+      await refresh();
     } else {
-      setStatus('❌ Check-in fout: ' + (r.json?.error || r.text));
+      alert('❌ Check-in fout: ' + (r.json?.error || r.text));
+      setStatus('Check-in fout.');
     }
   }
 
   async function submitScore(){
-    if (!api) return setStatus('API ontbreekt.');
-    if (!roundId || !pid) return setStatus('URL mist round_id/pid.');
-    if (!token) return setStatus('Token ontbreekt (t=...).');
-
+    if (!checkedIn) return alert('Eerst check-in.');
     const hole = Number($('hole').value || 0);
     const strokes = Number(String($('strokes').value||'').trim());
+    if (!hole || hole < 1) return alert('Hole ongeldig.');
+    if (!strokes || strokes < 1 || strokes > 25) return alert('Slagen ongeldig.');
 
-    if (!hole || hole < 1) return setStatus('Hole is ongeldig.');
-    if (!strokes || strokes < 1 || strokes > 25) return setStatus('Slagen ongeldig.');
+    setSubmitState('sending', 'Versturen…');
 
     await loadConfig();
     let gps = {};
@@ -428,41 +478,58 @@
       gps = await getGpsOnce(cfg.gps_timeout_seconds, cfg.gps_enable_high_accuracy);
     }
 
-    const alias = $('alias').value.trim() || loadAlias(); // server negeert dit
-
     const payload = {
       action: 'submitScore',
       round_id: roundId,
       player_id: pid,
       token: token,
-      hole: hole,
-      strokes: strokes,
-      client_alias: alias,
+      hole,
+      strokes,
       ...gps
     };
 
     const r = await apiPost(payload);
     if (r.json && r.json.ok){
-      setStatus(`✅ Hole ${hole} opgeslagen. Total points: ${r.json.total_points ?? '—'}`);
-      $('strokes').value = '';
+      alert(`✅ Gelukt! Hole ${hole} opgeslagen.`);
+      // update punten direct uit response
+      updateMyPoints(r.json.total_points, r.json.thru);
+
+      // volgende hole
+      const next = Math.min(hole + 1, holes);
+      if (hole >= holes){
+        setScoreStatus('Klaar! Je hebt je laatste hole ingevuld.');
+        enableScoringUI(false);
+        setSubmitState('disabled', 'Klaar (alles ingevuld)');
+        return;
+      }
+      setCurrentHole(next);
+      // blijft rood totdat volgende submit (ready zodra slagen ingevuld)
+      validateReady();
     } else {
-      setStatus('❌ Submit fout: ' + (r.json?.error || r.text));
+      alert('❌ Niet gelukt: ' + (r.json?.error || r.text));
+      // terug naar rood-ready status (niet doorgaan)
+      validateReady();
     }
   }
 
-  (async function init(){
+  (function init(){
     $('pillPid').textContent = 'pid: ' + (pid || '—');
     $('pillRound').textContent = 'round: ' + (roundId || '—');
     $('pillApi').textContent = 'api: ' + (trunc(api, 40) || '—');
 
-    $('alias').value = loadAlias();
+    $('strokes').addEventListener('input', validateReady);
+    $('hole').addEventListener('change', ()=>{
+      currentHole = Number($('hole').value||1);
+      $('strokes').value = '';
+      validateReady();
+      setScoreStatus(`Vul slagen in voor hole ${currentHole} en druk op Submit.`);
+    });
 
     if (!api) return setStatus('API ontbreekt in URL (?api=...)');
     if (!roundId) return setStatus('round_id ontbreekt in URL (?round_id=...)');
+    if (!pid) return setStatus('pid ontbreekt in URL (?pid=...)');
 
-    await loadConfig();
-    await refreshRound();
-    setStatus('Klaar. Vul alias (optioneel), check-in en voer scores in.');
+    refresh();
   })();
 </script>
 </body>
