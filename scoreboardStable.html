@@ -79,7 +79,7 @@
       font-weight:900;
       letter-spacing:.02em;
     }
-    .controls input{
+    .controls input[type="number"]{
       width:90px;
       padding:8px 10px;
       border-radius:12px;
@@ -88,6 +88,17 @@
       color:var(--text);
       font-size:14px;
       outline:none;
+    }
+    .controls input[type="text"]{
+      width:520px;
+      padding:8px 10px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.25);
+      color:var(--text);
+      font-size:13px;
+      outline:none;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     }
     .controls input:focus{
       border-color: rgba(31,166,122,.65);
@@ -161,15 +172,8 @@
     tbody tr:nth-child(even){ background: var(--rowB); }
     tbody tr:hover{ background: var(--rowHover); }
 
-    .rank{
-      width:64px;
-      font-weight:1100;
-      font-size:15px;
-    }
-    .points{
-      font-weight:1200;
-      font-size:16px;
-    }
+    .rank{ width:64px; font-weight:1100; font-size:15px; }
+    .points{ font-weight:1200; font-size:16px; }
     .muted{ color: var(--muted); }
     .small{ font-size:12px; color: var(--muted); }
 
@@ -208,9 +212,7 @@
       outline:none;
     }
 
-    .right{
-      text-align:right;
-    }
+    .right{ text-align:right; }
   </style>
 </head>
 <body>
@@ -225,21 +227,27 @@
     <div class="meta">
       <span class="pill" id="pillEvent">event: —</span>
       <span class="pill" id="pillRound">round: —</span>
-      <span class="pill" id="pillApi">api: —</span>
       <span class="pill" id="pillUpdated">updated: —</span>
     </div>
   </div>
 
   <div class="controls">
     <div class="box">
+      <label for="apiInput">API</label>
+      <input id="apiInput" type="text" placeholder="https://script.google.com/macros/s/.../exec" />
+      <button onclick="applyApi()">Use API</button>
+    </div>
+
+    <div class="box">
       <label for="refreshSec">Refresh (sec)</label>
       <input id="refreshSec" type="number" min="5" max="600" step="1" value="30" />
       <button onclick="applyRefresh()">Apply</button>
     </div>
+
     <button onclick="refreshNow()">Refresh now</button>
   </div>
 
-  <div class="status" id="status">Status: laden…</div>
+  <div class="status" id="status">Status: vul API in en klik “Use API”.</div>
 
   <div class="tableWrap">
     <table>
@@ -249,7 +257,6 @@
           <th>Speler (alias)</th>
           <th class="right">Punten</th>
           <th class="right">Hole</th>
-          <th class="right">Thru</th>
           <th class="right">Totaal holes</th>
           <th class="right">HCP</th>
           <th class="right">Playing HCP</th>
@@ -259,7 +266,7 @@
         </tr>
       </thead>
       <tbody id="tbody">
-        <tr><td colspan="11" class="muted" style="padding:14px 12px;">Geen data…</td></tr>
+        <tr><td colspan="10" class="muted" style="padding:14px 12px;">Geen data…</td></tr>
       </tbody>
     </table>
   </div>
@@ -267,12 +274,16 @@
 
 <script>
   const qs = new URLSearchParams(location.search);
-  const api     = qs.get('api') || '';
   const roundId = qs.get('round_id') || qs.get('round') || '';
+
+  // API can come from:
+  // - ?api=...
+  // - localStorage (stable_sb_api)
+  // - manual input
+  let api = qs.get('api') || localStorage.getItem('stable_sb_api') || '';
 
   function $(id){ return document.getElementById(id); }
   function trunc(s,n){ s=String(s||''); return s.length>n ? s.slice(0,n-1)+'…' : s; }
-
   function setStatus(msg){ $('status').textContent = 'Status: ' + msg; }
 
   async function apiGet(params){
@@ -284,22 +295,14 @@
     return {res, text, json};
   }
 
-  function aliasKey(pid){
-    // alias per round + player_id (zodat dezelfde P001 in andere round niet overlapt)
-    return `stable_alias_${roundId}_${pid}`;
-  }
-  function getAlias(pid){
-    return localStorage.getItem(aliasKey(pid)) || '';
-  }
-  function setAlias(pid, name){
-    localStorage.setItem(aliasKey(pid), String(name||'').trim());
-  }
+  function aliasKey(pid){ return `stable_alias_${roundId}_${pid}`; }
+  function getAlias(pid){ return localStorage.getItem(aliasKey(pid)) || ''; }
+  function setAlias(pid, name){ localStorage.setItem(aliasKey(pid), String(name||'').trim()); }
 
   function parseIso(iso){
     const t = Date.parse(iso || '');
     return isNaN(t) ? null : t;
   }
-
   function fmtDuration(ms){
     if (ms === null || ms === undefined) return '—';
     const s = Math.max(0, Math.floor(ms/1000));
@@ -308,27 +311,38 @@
     if (m <= 0) return `${r}s`;
     return `${m}m ${String(r).padStart(2,'0')}s`;
   }
-
   function fmtAvg(msPerHole){
     if (!isFinite(msPerHole) || msPerHole <= 0) return '—';
     return fmtDuration(msPerHole);
   }
 
+  function escapeHtml(s){
+    return String(s ?? '')
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;');
+  }
+
+  function statusBadge(status){
+    if (status === 'LIVE') return `<span class="badge good">LIVE</span>`;
+    if (status === 'FINISHED') return `<span class="badge warn">FINISHED</span>`;
+    return `<span class="badge bad">NO CHECK-IN</span>`;
+  }
+
   function computeRow(round, player, sbRow){
     const now = Date.now();
     const totalPoints = Number(sbRow?.total_points || 0);
-    const thru = Number(sbRow?.thru || 0);
     const totalHoles = Number(player?.holes || round?.holes || 18) || 18;
 
+    // thru is only used internally to compute holeNow/time; not displayed
+    const thru = Number(sbRow?.thru || 0);
     const holeNow = (thru >= totalHoles) ? 'KLAAR' : String(thru + 1);
 
-    // avg time per hole: (now - checkin_time) / max(thru,1)
     const checkinMs = parseIso(player?.checkin_time);
-    const avg = (checkinMs && thru > 0) ? ( (now - checkinMs) / thru ) : null;
+    const avg = (checkinMs && thru > 0) ? ((now - checkinMs) / thru) : null;
 
     // time on current hole:
-    // - use scoreboard last_update_ts if present (from STABLEFORD.updated_at when available)
-    // - else use checkin_time if no scores yet
+    // if STABLEFORD has updated_at -> Code.gs can return last_update_ts in scoreboard entry
     const lastUpdate = parseIso(sbRow?.last_update_ts);
     const base = lastUpdate || checkinMs;
     const onHole = base ? (now - base) : null;
@@ -341,7 +355,6 @@
     return {
       player_id: player?.player_id || sbRow?.player_id || '',
       points: totalPoints,
-      thru,
       holeNow,
       totalHoles,
       hcp: player?.hcp ?? '—',
@@ -352,23 +365,16 @@
     };
   }
 
-  function statusBadge(status){
-    if (status === 'LIVE') return `<span class="badge good">LIVE</span>`;
-    if (status === 'FINISHED') return `<span class="badge warn">FINISHED</span>`;
-    return `<span class="badge bad">NO CHECK-IN</span>`;
-  }
-
   function renderTable(rows, playersById){
-    // sort: points desc, then thru desc, then player_id asc
+    // sort: points desc
     rows.sort((a,b)=>{
       if (b.points !== a.points) return b.points - a.points;
-      if (b.thru !== a.thru) return b.thru - a.thru;
       return String(a.player_id).localeCompare(String(b.player_id));
     });
 
     const tbody = $('tbody');
     if (!rows.length){
-      tbody.innerHTML = `<tr><td colspan="11" class="muted" style="padding:14px 12px;">Geen spelers…</td></tr>`;
+      tbody.innerHTML = `<tr><td colspan="10" class="muted" style="padding:14px 12px;">Geen spelers…</td></tr>`;
       return;
     }
 
@@ -380,7 +386,6 @@
       const avgTxt = fmtAvg(r.avgMs);
       const onHoleTxt = fmtDuration(r.onHoleMs);
 
-      // show hole: current or KLAAR
       const holeBadge = (r.holeNow === 'KLAAR')
         ? `<span class="badge warn">KLAAR</span>`
         : `<span class="badge good">${r.holeNow}</span>`;
@@ -392,11 +397,7 @@
           <td>
             <div class="nameCell">
               <span class="badge">${pid}</span>
-              <div
-                class="alias"
-                data-pid="${pid}"
-                title="Dubbelklik om te wijzigen"
-              >${escapeHtml(alias)}</div>
+              <div class="alias" data-pid="${pid}" title="Dubbelklik om te wijzigen">${escapeHtml(alias)}</div>
             </div>
             <div class="small muted">
               ${escapeHtml(p.loop_id || '—')} • ${escapeHtml(p.tee || '—')} • ${escapeHtml(p.gender || '—')}
@@ -405,7 +406,6 @@
 
           <td class="right points">${r.points}</td>
           <td class="right">${holeBadge}</td>
-          <td class="right">${r.thru}</td>
           <td class="right">${r.totalHoles}</td>
           <td class="right">${escapeHtml(String(r.hcp))}</td>
           <td class="right">${escapeHtml(String(r.playing_hcp))}</td>
@@ -418,12 +418,11 @@
 
     tbody.innerHTML = html;
 
-    // enable alias editing (dblclick -> contenteditable)
+    // alias editing (dblclick)
     tbody.querySelectorAll('.alias').forEach(el=>{
       el.addEventListener('dblclick', ()=>{
         el.setAttribute('contenteditable','true');
         el.focus();
-        // select text
         const range = document.createRange();
         range.selectNodeContents(el);
         const sel = window.getSelection();
@@ -431,10 +430,7 @@
       });
 
       el.addEventListener('keydown', (ev)=>{
-        if (ev.key === 'Enter'){
-          ev.preventDefault();
-          el.blur();
-        }
+        if (ev.key === 'Enter'){ ev.preventDefault(); el.blur(); }
         if (ev.key === 'Escape'){
           ev.preventDefault();
           const pid = el.dataset.pid;
@@ -447,7 +443,6 @@
       el.addEventListener('blur', ()=>{
         const pid = el.dataset.pid;
         const val = String(el.textContent || '').trim();
-        // empty => fallback to pid
         if (!val || val === pid){
           localStorage.removeItem(aliasKey(pid));
           el.textContent = pid;
@@ -460,18 +455,11 @@
     });
   }
 
-  function escapeHtml(s){
-    return String(s ?? '')
-      .replaceAll('&','&amp;')
-      .replaceAll('<','&lt;')
-      .replaceAll('>','&gt;');
-  }
-
   let timer = null;
 
   async function refreshNow(){
     try{
-      if (!api) return setStatus('API ontbreekt in URL (?api=...)');
+      if (!api) return setStatus('API ontbreekt. Vul API in en klik “Use API”.');
       if (!roundId) return setStatus('round_id ontbreekt in URL (?round_id=...)');
 
       setStatus('laden…');
@@ -485,16 +473,11 @@
       const players = Array.isArray(r.json.players) ? r.json.players : [];
       const scoreboard = Array.isArray(r.json.scoreboard) ? r.json.scoreboard : [];
 
-      // map players
       const playersById = {};
       for (const p of players){
         playersById[String(p.player_id||'').trim()] = p;
       }
 
-      // build rows:
-      // use union of:
-      // - scoreboard entries (players with at least 1 score)
-      // - players list (checked-in or not) so everyone shows
       const sbByPid = {};
       for (const s of scoreboard){
         const pid = String(s.player_id||'').trim();
@@ -506,27 +489,19 @@
         const pid = String(p.player_id||'').trim();
         rows.push(computeRow(round, p, sbByPid[pid] || null));
       }
-
-      // also catch scoreboard players missing from players (shouldn't happen, but safe)
       for (const pid of Object.keys(sbByPid)){
         if (!playersById[pid]){
           rows.push(computeRow(round, { player_id: pid }, sbByPid[pid]));
         }
       }
 
-      // header pills
       $('pillEvent').textContent = 'event: ' + (round.event_code || '—');
       $('pillRound').textContent = 'round: ' + (round.round_id || roundId || '—');
-      $('pillApi').textContent = 'api: ' + trunc(api, 48);
       $('pillUpdated').textContent = 'updated: ' + new Date().toLocaleTimeString();
 
       renderTable(rows, playersById);
 
-      setStatus(
-        `OK • spelers: ${players.length} • leaderboard: ${rows.length}\n` +
-        `Refresh elke ${$('refreshSec').value}s (instelbaar)`
-      );
-
+      setStatus(`OK • spelers: ${players.length} • refresh elke ${$('refreshSec').value}s`);
     }catch(e){
       setStatus('Fout: ' + (e?.message || e));
     }
@@ -543,22 +518,33 @@
     refreshNow();
   }
 
-  (function init(){
-    $('pillApi').textContent = 'api: ' + (api ? trunc(api, 48) : '—');
-    $('pillRound').textContent = 'round: ' + (roundId || '—');
+  function applyApi(){
+    const v = $('apiInput').value.trim();
+    if (!v){
+      api = '';
+      localStorage.removeItem('stable_sb_api');
+      return setStatus('API leeg gemaakt. Vul opnieuw in.');
+    }
+    api = v;
+    localStorage.setItem('stable_sb_api', api);
+    setStatus('API ingesteld. Laden…');
+    applyRefresh(); // starts 30s default unless changed
+  }
 
-    if (!api) return setStatus('API ontbreekt in URL (?api=...)');
+  (function init(){
+    $('pillRound').textContent = 'round: ' + (roundId || '—');
+    $('apiInput').value = api || '';
+    $('refreshSec').value = '30'; // default 30
+
     if (!roundId) return setStatus('round_id ontbreekt in URL (?round_id=...)');
 
-    // default 30 sec, but if API config has refresh_seconds we use it (still adjustable)
-    (async ()=>{
-      const cfg = await apiGet({ action:'config' });
-      if (cfg.json && cfg.json.ok && cfg.json.config){
-        const rs = Number(cfg.json.config.refresh_seconds || 30);
-        if (isFinite(rs) && rs >= 5 && rs <= 600) $('refreshSec').value = String(rs);
-      }
+    // If api already known, start right away
+    if (api){
+      setStatus('API geladen uit URL/localStorage. Laden…');
       applyRefresh();
-    })();
+    } else {
+      setStatus('Vul API in en klik “Use API”.');
+    }
   })();
 </script>
 </body>
