@@ -1,1 +1,177 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+  <title>Stableford – Scoreboard</title>
+  <style>
+    :root{--bg:#0b0c10;--card:#11131a;--muted:#9aa3b2;--text:#eef1f7;--line:#262b36;--shadow:0 10px 30px rgba(0,0,0,35);--r:18px;--good:#19c37d}
+    *{box-sizing:border-box}
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:radial-gradient(1200px 600px at 50% -10%, #1a2140 0%, var(--bg) 55%);color:var(--text)}
+    .wrap{max-width:1100px;margin:0 auto;padding:18px 14px 28px}
+    .top{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;border:1px solid var(--line);border-radius:var(--r);
+      background:linear-gradient(180deg, rgba(255,255,255,05), rgba(255,255,255,02));box-shadow:var(--shadow);padding:14px}
+    h1{margin:0;font-size:22px}
+    .sub{color:var(--muted);font-size:13px;line-height:1.35;max-width:760px}
+    .pills{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
+    .pill{border:1px solid var(--line);border-radius:999px;padding:7px 10px;font-size:12px;color:var(--muted);
+      background:rgba(255,255,255,.02);white-space:nowrap;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
+    .card{margin-top:14px;border:1px solid var(--line);border-radius:var(--r);
+      background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));box-shadow:var(--shadow);padding:14px}
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:10px 10px;border-bottom:1px solid rgba(255,255,255,.06);text-align:left}
+    th{font-size:12px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase}
+    td{font-size:14px}
+    .right{text-align:right}
+    .muted{color:var(--muted)}
+    .tag{display:inline-block;border:1px solid rgba(25,195,125,.55);color:var(--good);border-radius:999px;padding:4px 10px;font-weight:900;font-size:12px}
+    .status{margin-top:10px;border:1px solid var(--line);border-radius:16px;padding:12px;background:rgba(0,0,0,25);white-space:pre-wrap;font-size:13px;color:var(--muted)}
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <div>
+      <h1>Stableford Scoreboard</h1>
+      <div class="sub">Live overzicht. Alias wordt alleen getoond als die lokaal bekend is; anders zie je player_id.</div>
+    </div>
+    <div class="pills">
+      <span class="pill" id="pillRound">round: —</span>
+      <span class="pill" id="pillEvent">event: —</span>
+      <span class="pill" id="pillApi">api: —</span>
+      <span class="pill" id="pillAuto">auto: ON</span>
+    </div>
+  </div>
+
+  <div class="card">
+    <table>
+      <thead>
+        <tr>
+          <th>Speler</th>
+          <th class="right">Thru</th>
+          <th class="right">Punten</th>
+          <th class="right">Laatste update</th>
+        </tr>
+      </thead>
+      <tbody id="rows">
+        <tr><td colspan="4" class="muted">Laden…</td></tr>
+      </tbody>
+    </table>
+    <div class="status" id="status">Status: laden…</div>
+  </div>
+</div>
+
+<script>
+  const qs = new URLSearchParams(location.search);
+  const api = qs.get('api') || '';
+  const roundId = qs.get('round_id') || qs.get('round') || '';
+  const eventCode = qs.get('event_code') || qs.get('event') || '';
+  const myPid = qs.get('pid') || '';
+  const myAliasFromUrl = qs.get('alias') || '';
+
+  function $(id){ return document.getElementById(id); }
+  function trunc(s,n){ s=String(s||''); return s.length>n?s.slice(0,n-1)+'…':s; }
+  function setStatus(s){ $('status').textContent = 'Status: ' + s; }
+
+  function aliasKey(pid){
+    return `sf_alias:${eventCode || 'EV'}:${pid || 'P'}`;
+  }
+  function getAliasFor(pid){
+    // alleen lokaal bekend; en URL-alias alleen voor eigen pid
+    if (pid && myPid && pid === myPid && myAliasFromUrl) return myAliasFromUrl;
+    const a = localStorage.getItem(aliasKey(pid));
+    return a || '';
+  }
+
+  async function apiGet(params){
+    const u = new URL(api);
+    Object.entries(params).forEach(([k,v])=> u.searchParams.set(k, String(v)));
+    const res = await fetch(u.toString());
+    const text = await res.text();
+    let json=null; try{ json=JSON.parse(text); }catch{}
+    return {res, text, json};
+  }
+
+  function fmtAgo(iso){
+    const t = Date.parse(iso || '');
+    if (!t) return '—';
+    const s = Math.max(0, Math.floor((Date.now() - t)/1000));
+    if (s < 60) return s + 's';
+    const m = Math.floor(s/60);
+    if (m < 60) return m + 'm';
+    const h = Math.floor(m/60);
+    return h + 'u';
+  }
+
+  function render(state){
+    const players = Array.isArray(state.players) ? state.players : [];
+    // verwacht: server geeft totals/thru/last_update per speler in state.scoreboard[]
+    const sb = Array.isArray(state.scoreboard) ? state.scoreboard : [];
+
+    const byPid = new Map(sb.map(x => [x.player_id, x]));
+    // sorteervolgorde: meeste punten eerst
+    const order = players
+      .map(p => p.player_id)
+      .filter(Boolean)
+      .sort((a,b)=>{
+        const A = byPid.get(a) || {};
+        const B = byPid.get(b) || {};
+        return (Number(B.total_points||0) - Number(A.total_points||0)) || (String(a).localeCompare(String(b)));
+      });
+
+    const rows = order.map(pid=>{
+      const s = byPid.get(pid) || {};
+      const alias = getAliasFor(pid);
+      const label = alias ? `${alias} ` : '';
+      const shown = alias ? `${alias} (${pid})` : pid;
+
+      return `
+        <tr>
+          <td>${escapeHtml(shown)}</td>
+          <td class="right">${escapeHtml(String(s.thru ?? '—'))}</td>
+          <td class="right"><span class="tag">${escapeHtml(String(s.total_points ?? 0))}</span></td>
+          <td class="right muted">${escapeHtml(fmtAgo(s.last_update_ts || s.updated_at || ''))}</td>
+        </tr>
+      `;
+    });
+
+    $('rows').innerHTML = rows.length ? rows.join('') : `<tr><td colspan="4" class="muted">Geen spelers</td></tr>`;
+  }
+
+  function escapeHtml(s){
+    return String(s ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
+  }
+
+  let timer = null;
+  let auto = true;
+  const refreshMs = 5000;
+
+  async function tick(){
+    try{
+      if (!api) return setStatus('API ontbreekt (?api=...)');
+      if (!roundId) return setStatus('round_id ontbreekt (?round_id=...)');
+
+      const r = await apiGet({ action:'roundState', round_id: roundId });
+      if (!r.json || !r.json.ok) return setStatus('roundState fout: ' + (r.json?.error || r.text));
+
+      render(r.json);
+      setStatus(`OK. Laatste refresh: ${new Date().toLocaleTimeString()}`);
+    }catch(e){
+      setStatus('Fout: ' + (e?.message || e));
+    }
+  }
+
+  function init(){
+    $('pillRound').textContent = 'round: ' + (roundId || '—');
+    $('pillEvent').textContent = 'event: ' + (eventCode || '—');
+    $('pillApi').textContent = 'api: ' + (trunc(api,40) || '—');
+
+    tick();
+    timer = setInterval(()=>{ if(auto) tick(); }, refreshMs);
+  }
+
+  init();
+</script>
+</body>
+</html>
 
