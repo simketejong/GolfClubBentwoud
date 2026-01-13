@@ -6,49 +6,170 @@
   <title>Stableford – Live Scoring</title>
   <style>
     :root{
-      --bg:#0b0c10; --card:#11131a; --muted:#9aa3b2; --text:#eef1f7; --line:#262b36;
-      --good:#19c37d; --warn:#ffcc00; --bad:#ff4d4d; --shadow:0 10px 30px rgba(0,0,0,35); --r:18px;
+      --bg:#070A12;
+      --card:#0E1422;
+      --card2:#0B1020;
+      --line:#24304A;
+      --text:#F3F6FF;
+      --muted:#A7B1C8;
+
+      --btn:#26324B;
+      --btnBorder:#44506A;
+      --btnText:#FFFFFF;
+
+      --good:#0F6A4F;
+      --goodBorder:#1FA67A;
+
+      --warn:#8A6D00;
+      --warnBorder:#FFCC00;
+
+      --bad:#7A1F1F;
+      --badBorder:#FF5C5C;
+
+      --shadow: 0 14px 40px rgba(0,0,0,.45);
+      --r:18px;
     }
-    *{box-sizing:border-box}
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial;background:radial-gradient(1200px 600px at 50% -10%, #1a2140 0%, var(--bg) 55%);color:var(--text)}
-    .wrap{max-width:1100px;margin:0 auto;padding:18px 14px 28px}
-    .top{display:flex;flex-wrap:wrap;gap:12px;align-items:flex-end;border:1px solid var(--line);border-radius:var(--r);
-      background:linear-gradient(180deg, rgba(255,255,255,05), rgba(255,255,255,02));box-shadow:var(--shadow);padding:14px}
-    h1{margin:0;font-size:22px}
-    .sub{color:var(--muted);font-size:13px;line-height:1.35;max-width:760px}
-    .pills{display:flex;gap:8px;flex-wrap:wrap;margin-left:auto}
-    .pill{border:1px solid var(--line);border-radius:999px;padding:7px 10px;font-size:12px;color:var(--muted);
-      background:rgba(255,255,255,.02);white-space:nowrap;font-family:ui-monospace,SFMono-Regular,Menlo,monospace}
-    .grid{margin-top:14px;display:grid;grid-template-columns:1fr 1fr;gap:14px}
-    @media (max-width: 960px){.grid{grid-template-columns:1fr}}
-    .card{border:1px solid var(--line);border-radius:var(--r);background:linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
-      box-shadow:var(--shadow);padding:16px}
-    .row{display:flex;gap:10px}
-    .row>*{flex:1}
-    label{display:block;font-weight:800;font-size:12px;margin-bottom:6px;color:var(--muted)}
+
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      color:var(--text);
+      background:
+        radial-gradient(1200px 700px at 50% -10%, #1b2a66 0%, rgba(27,42,102,0) 55%),
+        radial-gradient(900px 600px at 80% 120%, #0f5b3f55 0%, rgba(15,91,63,0) 55%),
+        var(--bg);
+    }
+
+    .wrap{ max-width:1100px; margin:0 auto; padding:18px 14px 28px; }
+
+    .top{
+      display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end;
+      border:1px solid var(--line); border-radius:var(--r);
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
+      box-shadow: var(--shadow);
+      padding:14px 16px;
+    }
+    h1{ margin:0; font-size:22px; letter-spacing:.2px; }
+    .sub{ color:var(--muted); font-size:13px; line-height:1.35; max-width:760px; }
+
+    .pills{ display:flex; gap:8px; flex-wrap:wrap; margin-left:auto; }
+    .pill{
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:7px 10px;
+      font-size:12px;
+      color:var(--muted);
+      background: rgba(0,0,0,.2);
+      white-space:nowrap;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    .grid{
+      margin-top:14px;
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:14px;
+    }
+    @media (max-width: 960px){ .grid{ grid-template-columns:1fr; } }
+
+    .card{
+      border:1px solid var(--line);
+      border-radius:var(--r);
+      background: linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
+      box-shadow: var(--shadow);
+      padding:16px;
+    }
+
+    .card h2{ margin:0 0 8px 0; font-size:16px; }
+
+    label{
+      display:block;
+      font-weight:800;
+      font-size:12px;
+      margin-bottom:6px;
+      color:var(--muted);
+    }
+
     input, select{
-      padding:12px 12px;font-size:16px;border-radius:14px;border:1px solid var(--line);
-      background:rgba(0,0,0,25);color:var(--text);outline:none;width:100%
+      width:100%;
+      padding:12px 12px;
+      font-size:16px;
+      border-radius:14px;
+      border:1px solid var(--line);
+      background: rgba(0,0,0,.28);
+      color:var(--text);
+      outline:none;
     }
+
+    input:focus, select:focus{
+      border-color: var(--goodBorder);
+      box-shadow: 0 0 0 2px rgba(31,166,122,.25);
+    }
+
+    .row{ display:flex; gap:10px; }
+    .row>*{ flex:1; }
+
     button{
-      padding:12px 14px;font-size:16px;border-radius:14px;border:1px solid var(--line);
-      background:rgba(255,255,255,03);color:var(--text);cursor:pointer;font-weight:900;width:100%
+      padding:12px 14px;
+      font-size:16px;
+      border-radius:14px;
+      border:1px solid var(--btnBorder);
+      background: var(--btn);
+      color: var(--btnText);
+      cursor:pointer;
+      font-weight:900;
+      width:100%;
     }
-    button:active{transform:translateY(1px)}
-    .btnGood{border-color:rgba(25,195,125,.55)}
-    .btnWarn{border-color:rgba(255,204,0,.55)}
-    .btnBad{border-color:rgba(255,77,77,.55)}
-    .status{margin-top:12px;border:1px solid var(--line);border-radius:16px;padding:12px;background:rgba(0,0,0,25);white-space:pre-wrap;font-size:13px;color:var(--muted)}
-    .tiny{color:var(--muted);font-size:12px;line-height:1.35;margin-top:10px}
+    button:hover{ filter: brightness(1.08); }
+    button:active{ transform: translateY(1px); }
+    button:disabled{
+      background:#141B2B;
+      color:#7f8aa3;
+      border-color:#24304A;
+      cursor:not-allowed;
+      filter:none;
+      transform:none;
+    }
+
+    .btnGood{ background: var(--good); border-color: var(--goodBorder); }
+    .btnWarn{ background: var(--warn); border-color: var(--warnBorder); }
+    .btnBad { background: var(--bad);  border-color: var(--badBorder); }
+
+    .hint{ color:var(--muted); font-size:12px; line-height:1.35; margin-top:10px; }
+    .status{
+      margin-top:12px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:12px;
+      background: rgba(0,0,0,.22);
+      white-space:pre-wrap;
+      font-size:13px;
+      color:var(--muted);
+      min-height: 52px;
+    }
+
+    .tinyRow{
+      display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;
+      color:var(--muted); font-size:12px;
+    }
+    .kv{
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:999px;
+      padding:6px 10px;
+      background: rgba(0,0,0,.18);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
   </style>
 </head>
+
 <body>
 <div class="wrap">
   <div class="top">
     <div>
       <h1>Stableford Live Scoring</h1>
       <div class="sub">
-        Vul je roepnaam in (blijft alleen op je toestel). Daarna check-in en voer per hole je slagen + marker in.
+        Vul je roepnaam in (blijft alleen op je toestel). Check-in en voer per hole je slagen in.
       </div>
     </div>
     <div class="pills">
@@ -59,8 +180,9 @@
   </div>
 
   <div class="grid">
+    <!-- Alias card -->
     <div class="card">
-      <h2 style="margin:0 0 8px 0;font-size:16px;">1) Jouw roepnaam</h2>
+      <h2>1) Jouw roepnaam</h2>
 
       <label>Roepsnaam (niet opgeslagen in sheet)</label>
       <input id="alias" placeholder="bijv. Simke / Tiger / 'die met die putter'" />
@@ -70,22 +192,30 @@
         <button class="btnGood" onclick="openScoreboard()">Open Scoreboard</button>
       </div>
 
-      <div class="tiny">
-        Dit werkt voor jouw eigen scherm/link. Een centrale clubhouse-scoreboard ziet aliases alleen als je ze wél ergens opslaat.
+      <div class="hint">
+        Tip: het clubhuis-scoreboard ziet geen roepnamen tenzij je ze server-side opslaat.
       </div>
 
       <div class="status" id="status">Status: laden…</div>
     </div>
 
+    <!-- Scoring card -->
     <div class="card">
-      <h2 style="margin:0 0 8px 0;font-size:16px;">2) Check-in & Scoren</h2>
+      <h2>2) Check-in & Scoren</h2>
 
       <div class="row">
-        <button class="btnGood" onclick="checkin()">Check-in</button>
-        <button class="btnWarn" onclick="refreshRound()">Refresh spelers</button>
+        <button class="btnGood" id="btnCheckin" onclick="checkin()">Check-in</button>
+        <button class="btnWarn" onclick="refreshRound()">Refresh</button>
       </div>
 
-      <div class="row" style="margin-top:10px;">
+      <div class="tinyRow">
+        <span class="kv" id="kvLoop">loop: —</span>
+        <span class="kv" id="kvTee">tee: —</span>
+        <span class="kv" id="kvHoles">holes: —</span>
+        <span class="kv" id="kvPHcp">play_hcp: —</span>
+      </div>
+
+      <div class="row" style="margin-top:12px;">
         <div>
           <label>Hole</label>
           <select id="hole"></select>
@@ -96,16 +226,13 @@
         </div>
       </div>
 
-      <label style="margin-top:10px;">Marker</label>
-      <select id="marker"></select>
-
-      <div class="row" style="margin-top:10px;">
+      <div class="row" style="margin-top:12px;">
         <button class="btnGood" onclick="submitScore()">Submit hole</button>
-        <button class="btnBad" onclick="clearLocal()">Reset lokaal (alias)</button>
+        <button class="btnBad" onclick="clearLocal()">Reset alias lokaal</button>
       </div>
 
-      <div class="tiny">
-        Slagen + marker → Code.gs rekent Stableford bij. GPS wordt meegegeven als CONFIG dit vraagt.
+      <div class="hint">
+        GPS wordt meegegeven als CONFIG dit vraagt. Marker is uitgeschakeld.
       </div>
     </div>
   </div>
@@ -114,34 +241,31 @@
 <script>
   const qs = new URLSearchParams(location.search);
   const api = qs.get('api') || '';
-  const roundId = qs.get('round') || qs.get('round_id') || '';
+  const roundId = qs.get('round_id') || qs.get('round') || '';
   const pid = qs.get('pid') || qs.get('player_id') || '';
   const token = qs.get('t') || qs.get('token') || '';
-  const eventCode = qs.get('event') || qs.get('event_code') || qs.get('expected_qr_code_id') || '';
+  const eventCode = qs.get('event_code') || qs.get('event') || '';
 
   function $(id){ return document.getElementById(id); }
+  function trunc(s,n){ s=String(s||''); return s.length>n ? s.slice(0,n-1)+'…' : s; }
   function setStatus(s){ $('status').textContent = 'Status: ' + s; }
-  function trunc(s,n){ s=String(s||''); return s.length>n?s.slice(0,n-1)+'…':s; }
 
   function aliasKey(){ return `sf_alias:${eventCode || 'EV'}:${pid || 'P'}`; }
-
   function loadAlias(){
     const fromUrl = qs.get('alias');
     if (fromUrl) return fromUrl;
     return localStorage.getItem(aliasKey()) || '';
   }
-
   function saveAlias(){
     const a = $('alias').value.trim();
     if (!a) return setStatus('Alias leeg.');
     localStorage.setItem(aliasKey(), a);
     setStatus(`Alias opgeslagen op dit toestel: "${a}"`);
   }
-
   function clearLocal(){
     localStorage.removeItem(aliasKey());
     $('alias').value = '';
-    setStatus('Lokaal alias verwijderd.');
+    setStatus('Alias lokaal verwijderd.');
   }
 
   function scoreboardUrl(){
@@ -154,21 +278,18 @@
     if (eventCode) u.searchParams.set('event_code', eventCode);
     if (roundId) u.searchParams.set('round_id', roundId);
     if (pid) u.searchParams.set('pid', pid);
-
     const a = $('alias').value.trim() || loadAlias();
-    if (a) u.searchParams.set('alias', a); // alleen via link, niet server-side
+    if (a) u.searchParams.set('alias', a);
     return u.toString();
   }
 
   function openScoreboard(){
-    // zorgt dat alias mee gaat
     if ($('alias').value.trim()) saveAlias();
     window.open(scoreboardUrl(), '_blank');
     setStatus('Scoreboard geopend (nieuw tabblad).');
   }
 
   async function apiPost(payloadObj){
-    // form-urlencoded (zoals matchplay)
     const data = new URLSearchParams();
     data.set('payload', JSON.stringify(payloadObj));
     const res = await fetch(api, {
@@ -194,7 +315,11 @@
     return await new Promise((resolve) => {
       if (!navigator.geolocation) return resolve({ gps_status:'no_geolocation' });
       let done=false;
-      const timer = setTimeout(()=>{ if(done) return; done=true; resolve({ gps_status:'timeout' }); }, Math.max(1,timeoutSeconds)*1000);
+      const timer = setTimeout(()=>{
+        if(done) return;
+        done=true;
+        resolve({ gps_status:'timeout' });
+      }, Math.max(1,timeoutSeconds)*1000);
 
       navigator.geolocation.getCurrentPosition(
         (pos)=>{
@@ -226,6 +351,13 @@
     }
   }
 
+  function setPlayerMeta(me){
+    $('kvLoop').textContent = 'loop: ' + (me?.loop_id || '—');
+    $('kvTee').textContent = 'tee: ' + (me?.tee || '—');
+    $('kvHoles').textContent = 'holes: ' + (me?.holes || '—');
+    $('kvPHcp').textContent = 'play_hcp: ' + (me?.playing_hcp ?? '—');
+  }
+
   async function refreshRound(){
     if (!api) return setStatus('API ontbreekt in URL (?api=...)');
     if (!roundId) return setStatus('round_id ontbreekt in URL (?round_id=...)');
@@ -233,8 +365,12 @@
     const r = await apiGet({ action:'roundState', round_id: roundId });
     if (!r.json || !r.json.ok) return setStatus('roundState fout: ' + (r.json?.error || r.text));
 
-    // fill holes selector
-    const holes = Number(r.json.round?.holes || 18);
+    const players = Array.isArray(r.json.players) ? r.json.players : [];
+    const me = players.find(p => p.player_id === pid) || null;
+    setPlayerMeta(me);
+
+    const holes = Number(me?.holes || r.json.round?.holes || 18);
+
     $('hole').innerHTML = '';
     for (let h=1; h<=holes; h++){
       const opt = document.createElement('option');
@@ -243,29 +379,16 @@
       $('hole').appendChild(opt);
     }
 
-    // marker list = checked-in players
-    const players = Array.isArray(r.json.players) ? r.json.players : [];
-    const checked = players.filter(p => String(p.checked_in).toUpperCase() === 'TRUE');
-    $('marker').innerHTML = '';
-    const m0 = document.createElement('option');
-    m0.value = '';
-    m0.textContent = '— kies marker —';
-    $('marker').appendChild(m0);
+    const checked = String(me?.checked_in || '').toUpperCase() === 'TRUE';
+    $('btnCheckin').disabled = checked;
 
-    checked.forEach(p=>{
-      const opt = document.createElement('option');
-      opt.value = p.player_id;
-      opt.textContent = p.player_id; // we tonen hier bewust geen naam
-      $('marker').appendChild(opt);
-    });
-
-    setStatus(`Round geladen. Ingecheckt: ${checked.length}/${players.length}`);
+    setStatus(`Round geladen. Jij: ${pid} | ${checked ? 'ingecheckt' : 'niet ingecheckt'}`);
   }
 
   async function checkin(){
     if (!api) return setStatus('API ontbreekt.');
     if (!roundId || !pid || !eventCode) return setStatus('URL mist round_id/pid/event_code.');
-    if (!token) return setStatus('Token ontbreekt (t=...)');
+    if (!token) return setStatus('Token ontbreekt (t=...).');
 
     await loadConfig();
     const gps = await getGpsOnce(cfg.gps_timeout_seconds, cfg.gps_enable_high_accuracy);
@@ -291,15 +414,13 @@
   async function submitScore(){
     if (!api) return setStatus('API ontbreekt.');
     if (!roundId || !pid) return setStatus('URL mist round_id/pid.');
-    if (!token) return setStatus('Token ontbreekt (t=...)');
+    if (!token) return setStatus('Token ontbreekt (t=...).');
 
     const hole = Number($('hole').value || 0);
     const strokes = Number(String($('strokes').value||'').trim());
-    const markerPid = $('marker').value;
 
     if (!hole || hole < 1) return setStatus('Hole is ongeldig.');
     if (!strokes || strokes < 1 || strokes > 25) return setStatus('Slagen ongeldig.');
-    if (!markerPid) return setStatus('Marker kiezen.');
 
     await loadConfig();
     let gps = {};
@@ -307,8 +428,7 @@
       gps = await getGpsOnce(cfg.gps_timeout_seconds, cfg.gps_enable_high_accuracy);
     }
 
-    // alias wordt NIET opgeslagen door server; we sturen 'm eventueel mee voor eigen UI (server mag negeren)
-    const alias = $('alias').value.trim() || loadAlias();
+    const alias = $('alias').value.trim() || loadAlias(); // server negeert dit
 
     const payload = {
       action: 'submitScore',
@@ -317,14 +437,13 @@
       token: token,
       hole: hole,
       strokes: strokes,
-      marker_player_id: markerPid,
-      client_alias: alias, // server: negeren / niet opslaan
+      client_alias: alias,
       ...gps
     };
 
     const r = await apiPost(payload);
     if (r.json && r.json.ok){
-      setStatus(`✅ Hole ${hole} opgeslagen.`);
+      setStatus(`✅ Hole ${hole} opgeslagen. Total points: ${r.json.total_points ?? '—'}`);
       $('strokes').value = '';
     } else {
       setStatus('❌ Submit fout: ' + (r.json?.error || r.text));
@@ -348,4 +467,3 @@
 </script>
 </body>
 </html>
-
