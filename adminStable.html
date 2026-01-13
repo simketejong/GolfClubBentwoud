@@ -1,0 +1,505 @@
+<!doctype html>
+<html lang="nl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1" />
+  <title>Stableford – Admin</title>
+  <style>
+    :root{
+      --bg:#0b0c10;
+      --card:#11131a;
+      --muted:#9aa3b2;
+      --text:#eef1f7;
+      --line:#262b36;
+      --good:#19c37d;
+      --warn:#ffcc00;
+      --bad:#ff4d4d;
+      --shadow: 0 10px 30px rgba(0,0,0,35);
+      --r:18px;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      background: radial-gradient(1200px 600px at 50% -10%, #1a2140 0%, var(--bg) 55%);
+      color:var(--text);
+    }
+    .wrap{ max-width:1100px; margin:0 auto; padding:18px 14px 28px; }
+    .top{
+      display:flex; flex-wrap:wrap; gap:12px; align-items:flex-end;
+      border:1px solid var(--line); border-radius:var(--r);
+      background: linear-gradient(180deg, rgba(255,255,255,05), rgba(255,255,255,02));
+      box-shadow: var(--shadow);
+      padding:14px;
+    }
+    h1{ margin:0; font-size:22px; }
+    .sub{ color:var(--muted); font-size:13px; line-height:1.35; max-width:760px; }
+    label{ display:block; font-weight:800; font-size:12px; margin-bottom:6px; color:var(--muted); }
+    input, select, textarea{
+      padding:12px 12px; font-size:16px; border-radius:14px;
+      border:1px solid var(--line); background: rgba(0,0,0,25);
+      color:var(--text); outline:none; width: 100%;
+    }
+    textarea{ min-height: 220px; resize: vertical; font-family: ui-monospace, SFMono-Regular, Menlo, monospace; font-size:13px; }
+    .row{ display:flex; gap:10px; }
+    .row>*{ flex:1; }
+    button{
+      padding:12px 14px; font-size:16px; border-radius:14px;
+      border:1px solid var(--line);
+      background: rgba(255,255,255,03);
+      color:var(--text); cursor:pointer;
+      font-weight:900;
+      width:100%;
+    }
+    button:active{ transform: translateY(1px); }
+    .btnGood{ border-color: rgba(25,195,125,.55); }
+    .btnWarn{ border-color: rgba(255,204,0,.55); }
+    .btnBad{ border-color: rgba(255,77,77,.55); }
+
+    .pills{ display:flex; gap:8px; flex-wrap:wrap; margin-left:auto; }
+    .pill{
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:7px 10px;
+      font-size:12px;
+      color:var(--muted);
+      background: rgba(255,255,255,.02);
+      white-space:nowrap;
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    }
+
+    .grid{
+      margin-top:14px;
+      display:grid;
+      grid-template-columns: 1.25fr .75fr;
+      gap:14px;
+    }
+    @media (max-width: 960px){
+      .grid{ grid-template-columns: 1fr; }
+    }
+
+    .card{
+      border:1px solid var(--line);
+      border-radius:var(--r);
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      box-shadow: var(--shadow);
+      padding:16px;
+    }
+    .card h2{ margin:0 0 8px 0; font-size:16px; }
+    .hint{ color:var(--muted); font-size:13px; line-height:1.35; }
+    .tiny{ color:var(--muted); font-size:12px; line-height:1.35; margin-top:10px; }
+
+    .kpis{
+      display:grid;
+      grid-template-columns: 1fr 1fr;
+      gap:10px;
+      margin-top:10px;
+    }
+    .kpi{
+      border:1px solid rgba(255,255,255,.06);
+      border-radius:14px;
+      padding:10px 12px;
+      background: rgba(0,0,0,.18);
+    }
+    .kpi .k{ color:var(--muted); font-size:12px; }
+    .kpi .v{ font-size:18px; font-weight:1000; margin-top:4px; }
+    .ok{ color: var(--good); font-weight:1000; }
+    .no{ color: var(--bad); font-weight:1000; }
+
+    .status{
+      margin-top:12px;
+      border:1px solid var(--line);
+      border-radius:16px;
+      padding:12px;
+      background: rgba(0,0,0,25);
+      white-space:pre-wrap;
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    .list{
+      margin-top:10px;
+      border:1px solid rgba(255,255,255,06);
+      border-radius:14px;
+      overflow:hidden;
+    }
+    .list .head{
+      display:flex; justify-content:space-between; align-items:center;
+      padding:10px 12px;
+      background: rgba(0,0,0,18);
+      color:var(--muted);
+      font-size:12px;
+      letter-spacing:.08em;
+      text-transform:uppercase;
+    }
+    .list .body{ max-height: 280px; overflow:auto; }
+    .item{
+      display:flex; justify-content:space-between; gap:10px;
+      padding:10px 12px;
+      border-top:1px solid rgba(255,255,255,06);
+      font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+      font-size:12px;
+      align-items:center;
+    }
+    .item .right{ color:var(--muted); }
+    .tag{
+      border:1px solid var(--line);
+      border-radius:999px;
+      padding:4px 10px;
+      font-weight:1000;
+      font-size:12px;
+      background: rgba(255,255,255,02);
+      white-space:nowrap;
+    }
+    .tag.good{ border-color: rgba(25,195,125,.55); color: var(--good); }
+    .tag.warn{ border-color: rgba(255,204,0,.55); color: var(--warn); }
+    .tag.bad { border-color: rgba(255,77,77,.55); color: var(--bad); }
+  </style>
+</head>
+
+<body>
+<div class="wrap">
+
+  <div class="top">
+    <div>
+      <h1>Stableford Admin</h1>
+      <div class="sub">
+        Maak een Stableford wedstrijd + mail links.<br>
+        Input per speler: <b>email,hcp,gender</b> (gender = H of D).<br>
+        Geen namen in de sheet: alleen hcp + playing_hcp + player_id.
+      </div>
+    </div>
+
+    <div class="pills">
+      <span class="pill" id="pillApi">api: —</span>
+      <span class="pill" id="pillEvent">event: —</span>
+      <span class="pill" id="pillLoop">loop: —</span>
+    </div>
+  </div>
+
+  <div class="grid">
+    <!-- LEFT -->
+    <div class="card">
+      <h2>1) Instellingen</h2>
+      <div class="hint">
+        Vul API URL + admin key + event code. Kies baanconfig. Plak spelers en klik Preview. Daarna “Create + Mail”.
+      </div>
+
+      <label>API URL (Apps Script /exec)</label>
+      <input id="api" placeholder="https://script.google.com/macros/s/.../exec" />
+
+      <div class="row">
+        <div>
+          <label>Admin key</label>
+          <input id="adminKey" placeholder="(uit CONFIG sheet)" />
+        </div>
+        <div>
+          <label>Event code</label>
+          <input id="eventCode" placeholder="Stableford-Feb-2026" />
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:10px;">
+        <div>
+          <label>Ronde titel (optioneel)</label>
+          <input id="title" placeholder="Stableford – Zaterdag" />
+        </div>
+        <div>
+          <label>Holes</label>
+          <select id="holes">
+            <option value="18" selected>18</option>
+            <option value="9">9</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="row" style="margin-top:10px;">
+        <div>
+          <label>Lus (18 = combi)</label>
+          <select id="loopId">
+            <option value="OOST-ZUID" selected>OOST-ZUID (18)</option>
+            <option value="WEST-OOST">WEST-OOST (18)</option>
+            <option value="OOST">OOST (9)</option>
+            <option value="ZUID">ZUID (9)</option>
+            <option value="WEST">WEST (9)</option>
+            <option value="NOORD">NOORD (PAR3/4)</option>
+          </select>
+        </div>
+        <div>
+          <label>Tee</label>
+          <select id="tee">
+            <option value="WIT">WIT (H)</option>
+            <option value="GEEL" selected>GEEL</option>
+            <option value="BLAUW">BLAUW</option>
+            <option value="ROOD">ROOD</option>
+            <option value="ORANJE">ORANJE</option>
+          </select>
+        </div>
+      </div>
+
+      <label style="margin-top:12px;">Spelers (email,hcp,gender) – één per regel</label>
+      <textarea id="players" placeholder="a@club.nl, 12.4, H
+b@club.nl, 22.1, D
+c@club.nl, 8.9, H"></textarea>
+
+      <div class="row" style="margin-top:12px;">
+        <button class="btnWarn" onclick="preview()">Preview</button>
+        <button class="btnGood" onclick="createAndMail()">Create + Mail</button>
+      </div>
+
+      <div class="tiny">
+        Scheiding: komma / puntkomma / tab. Decimalen met punt of komma mag.<br/>
+        Gender: H of D (anders kunnen we playing_hcp niet goed uit HCP_TABLE halen).
+      </div>
+
+      <div class="status" id="status">Status: klaar</div>
+    </div>
+
+    <!-- RIGHT -->
+    <div class="card">
+      <h2>2) Preview</h2>
+      <div class="hint">Controleer aantallen + fouten. Daarna pas mailen (anders mail je 42 keer naar jezelf… ask me how I know).</div>
+
+      <div class="kpis">
+        <div class="kpi"><div class="k">Regels</div><div class="v" id="kLines">0</div></div>
+        <div class="kpi"><div class="k">Spelers</div><div class="v" id="kPlayers">0</div></div>
+        <div class="kpi"><div class="k">Unieke emails</div><div class="v" id="kUnique">0</div></div>
+        <div class="kpi"><div class="k">Input OK?</div><div class="v" id="kValid"><span class="no">NO</span></div></div>
+      </div>
+
+      <div class="list">
+        <div class="head"><div>Parsed</div><div id="prevCount">0</div></div>
+        <div class="body" id="previewList">
+          <div class="item"><div>—</div><div class="right">—</div></div>
+        </div>
+      </div>
+
+      <div class="tiny">
+        Let op: in de sheet slaan we géén namen op. Alleen player_id + hcp + playing_hcp.
+      </div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function $(id){ return document.getElementById(id); }
+
+  function setStatus(msg){ $('status').textContent = 'Status: ' + msg; }
+
+  function truncate(s, n){ s=String(s||''); return s.length>n ? s.slice(0,n-1)+'…' : s; }
+
+  function setPills(){
+    $('pillApi').textContent   = 'api: ' + (truncate($('api').value.trim(), 40) || '—');
+    $('pillEvent').textContent = 'event: ' + ($('eventCode').value.trim() || '—');
+    $('pillLoop').textContent  = 'loop: ' + ($('loopId').value.trim() || '—');
+  }
+
+  function normEmail(e){ return String(e||'').trim().toLowerCase(); }
+  function isValidEmail(e){
+    const x = normEmail(e);
+    return x.includes('@') && x.includes('.') && x.length >= 6;
+  }
+  function parseHcp(x){
+    const t = String(x||'').trim().replace(',', '.');
+    const v = Number(t);
+    return isFinite(v) ? v : null;
+  }
+  function parseGender(x){
+    const s = String(x||'').trim().toUpperCase();
+    if (s === 'H' || s === 'HEREN' || s === 'M') return 'H';
+    if (s === 'D' || s === 'DAMES' || s === 'V') return 'D';
+    return null;
+  }
+
+  function parsePlayers(text){
+    const lines = String(text||'').split(/\r?\n/);
+    const out = [];
+    const invalid = [];
+    let rawLines = 0;
+
+    for (const line of lines){
+      const t = line.trim();
+      if (!t) continue;
+      rawLines++;
+
+      const parts = t.split(/[,\t;]+/).map(x=>x.trim());
+      const email = parts[0] ?? '';
+      const hcp = parts[1] ?? '';
+      const gender = parts[2] ?? '';
+
+      if (!isValidEmail(email)){
+        invalid.push({ line:t, reason:'email ongeldig' });
+        continue;
+      }
+      const hv = parseHcp(hcp);
+      if (hv === null){
+        invalid.push({ line:t, reason:'hcp ongeldig' });
+        continue;
+      }
+      const gv = parseGender(gender);
+      if (!gv){
+        invalid.push({ line:t, reason:'gender mist (H/D)' });
+        continue;
+      }
+      out.push({ email: normEmail(email), hcp: hv, gender: gv });
+    }
+
+    return { players: out, rawLines, invalid };
+  }
+
+  function updateKpi(parsed){
+    $('kLines').textContent = String(parsed.rawLines);
+    $('kPlayers').textContent = String(parsed.players.length);
+    $('kUnique').textContent = String(new Set(parsed.players.map(p=>p.email)).size);
+    $('kValid').innerHTML = parsed.invalid.length
+      ? `<span class="no">NO (${parsed.invalid.length})</span>`
+      : `<span class="ok">YES</span>`;
+  }
+
+  function renderPreview(parsed){
+    const items = [];
+    for (const p of parsed.players.slice(0, 250)){
+      items.push(`
+        <div class="item">
+          <div>${escapeHtml(p.email)}</div>
+          <div class="right">
+            <span class="tag good">hcp ${escapeHtml(p.hcp.toFixed(1))}</span>
+            <span class="tag warn">${escapeHtml(p.gender)}</span>
+          </div>
+        </div>
+      `);
+    }
+    if (!items.length) items.push(`<div class="item"><div>Geen spelers</div><div class="right">—</div></div>`);
+    $('previewList').innerHTML = items.join('');
+    $('prevCount').textContent = String(parsed.players.length);
+  }
+
+  function escapeHtml(s){
+    return String(s ?? '')
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;');
+  }
+
+  async function apiPost(apiUrl, payloadObj){
+    // form-urlencoded to avoid CORS preflight
+    const data = new URLSearchParams();
+    data.set('payload', JSON.stringify(payloadObj));
+
+    const res = await fetch(apiUrl, {
+      method: "POST",
+      headers: { "Content-Type":"application/x-www-form-urlencoded;charset=UTF-8" },
+      body: data.toString()
+    });
+
+    const text = await res.text();
+    let json=null; try{ json=JSON.parse(text); }catch{}
+    return { ok: res.ok, status: res.status, text, json };
+  }
+
+  function preview(){
+    setPills();
+
+    const api = $('api').value.trim();
+    const eventCode = $('eventCode').value.trim();
+    const parsed = parsePlayers($('players').value);
+
+    updateKpi(parsed);
+    renderPreview(parsed);
+
+    if (!api) return setStatus('API URL ontbreekt.');
+    if (!eventCode) return setStatus('Event code ontbreekt.');
+
+    if (parsed.invalid.length){
+      const top = parsed.invalid.slice(0,10).map(x=>`- ${x.reason}: ${x.line}`).join('\n');
+      return setStatus(`Input heeft fouten:\n${top}`);
+    }
+    if (!parsed.players.length) return setStatus('Geen spelers gevonden.');
+
+    setStatus(`Preview OK.\nSpelers: ${parsed.players.length}\nUniek: ${new Set(parsed.players.map(p=>p.email)).size}\nLoop: ${$('loopId').value}\nTee: ${$('tee').value}\nHoles: ${$('holes').value}`);
+  }
+
+  async function createAndMail(){
+    try{
+      setPills();
+
+      const api = $('api').value.trim();
+      const adminKey = $('adminKey').value.trim();
+      const eventCode = $('eventCode').value.trim();
+      const title = $('title').value.trim();
+      const holes = Number($('holes').value || 18);
+      const loopId = $('loopId').value;
+      const tee = $('tee').value;
+
+      const parsed = parsePlayers($('players').value);
+      updateKpi(parsed);
+      renderPreview(parsed);
+
+      if (!api) return setStatus('API URL ontbreekt.');
+      if (!adminKey) return setStatus('Admin key ontbreekt.');
+      if (!eventCode) return setStatus('Event code ontbreekt.');
+      if (!parsed.players.length) return setStatus('Geen spelers gevonden.');
+      if (parsed.invalid.length){
+        const top = parsed.invalid.slice(0,10).map(x=>`- ${x.reason}: ${x.line}`).join('\n');
+        return setStatus(`Input heeft fouten:\n${top}`);
+      }
+
+      // safety confirm
+      const ok = confirm(`Wedstrijd aanmaken + mailen?\n\nEvent: ${eventCode}\nSpelers: ${parsed.players.length}\nLoop: ${loopId}\nTee: ${tee}\nHoles: ${holes}\n\nDoorgaan?`);
+      if (!ok) return setStatus('Geannuleerd.');
+
+      setStatus('Versturen… (adminCreateRound)');
+
+      const payload = {
+        action: "adminCreateRound",
+        admin_key: adminKey,
+        event_code: eventCode,
+        api_url: api,              // zelfde truc als matchplay
+        title: title,
+        holes: holes,
+        loop_id: loopId,
+        tee: tee,
+        players: parsed.players    // [{email,hcp,gender}]
+      };
+
+      const r = await apiPost(api, payload);
+
+      if (r.json && r.json.ok){
+        setStatus(`✅ Klaar.\nRound: ${r.json.round_id || '—'}\nPlayers: ${r.json.players_created || parsed.players.length}\nMails sent: ${r.json.mails_sent ?? '—'}\nErrors: ${r.json.errors ?? 0}\n\nCheck je mailbox voor admin summary.`);
+      } else {
+        setStatus(`❌ Fout (HTTP ${r.status}).\n${r.text}`);
+      }
+    }catch(e){
+      setStatus('❌ Fout: ' + (e?.message || e));
+    }
+  }
+
+  // ---- init (localStorage like matchplay admin)
+  (function init(){
+    const p = new URLSearchParams(location.search);
+
+    const api = p.get('api') || localStorage.getItem('adS_api') || '';
+    const event = p.get('event_code') || localStorage.getItem('adS_event') || '';
+    const key = localStorage.getItem('adS_key') || '';
+
+    $('api').value = api;
+    $('eventCode').value = event;
+    $('adminKey').value = key;
+
+    // persist on change
+    ['api','eventCode','adminKey','title','holes','loopId','tee'].forEach(id=>{
+      $(id).addEventListener('change', ()=>{
+        localStorage.setItem('adS_api', $('api').value.trim());
+        localStorage.setItem('adS_event', $('eventCode').value.trim());
+        localStorage.setItem('adS_key', $('adminKey').value.trim());
+        setPills();
+      });
+    });
+
+    setPills();
+    setStatus('Plak spelers en klik Preview.');
+  })();
+</script>
+</body>
+</html>
