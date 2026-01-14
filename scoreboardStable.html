@@ -12,18 +12,17 @@
       --text:#F3F6FF;
       --muted:#A7B1C8;
 
-      --good:#0F6A4F;
-      --warn:#8A6D00;
-      --bad:#7A1F1F;
-
       --shadow: 0 18px 48px rgba(0,0,0,.50);
       --r:18px;
 
       --rowA: rgba(255,255,255,.03);
       --rowB: rgba(255,255,255,.06);
       --rowHover: rgba(31,166,122,.10);
-    }
 
+      --good:#0F6A4F;
+      --warn:#8A6D00;
+      --bad:#7A1F1F;
+    }
     *{ box-sizing:border-box; }
     body{
       margin:0;
@@ -34,9 +33,7 @@
         radial-gradient(1000px 700px at 85% 120%, #0f5b3f55 0%, rgba(15,91,63,0) 55%),
         var(--bg);
     }
-
-    .wrap{ max-width:1400px; margin:0 auto; padding:18px 18px 26px; }
-
+    .wrap{ max-width:1500px; margin:0 auto; padding:18px 18px 26px; }
     .top{
       display:flex; gap:16px; align-items:flex-end; flex-wrap:wrap;
       border:1px solid var(--line); border-radius:var(--r);
@@ -46,11 +43,7 @@
     }
     h1{ margin:0; font-size:22px; letter-spacing:.2px; }
     .sub{ margin-top:6px; color:var(--muted); font-size:13px; line-height:1.35; }
-
-    .meta{
-      margin-left:auto;
-      display:flex; gap:10px; flex-wrap:wrap; align-items:center;
-    }
+    .meta{ margin-left:auto; display:flex; gap:10px; flex-wrap:wrap; align-items:center; }
     .pill{
       border:1px solid var(--line);
       border-radius:999px;
@@ -61,11 +54,7 @@
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
       white-space:nowrap;
     }
-
-    .controls{
-      display:flex; gap:10px; align-items:center; flex-wrap:wrap;
-      margin-top:12px;
-    }
+    .controls{ display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:12px; }
     .controls .box{
       border:1px solid var(--line);
       border-radius:14px;
@@ -73,36 +62,21 @@
       padding:10px 12px;
       display:flex; gap:10px; align-items:center;
     }
-    .controls label{
-      color:var(--muted);
-      font-size:12px;
-      font-weight:900;
-      letter-spacing:.02em;
-    }
+    .controls label{ color:var(--muted); font-size:12px; font-weight:900; letter-spacing:.02em; }
     .controls input[type="number"]{
-      width:90px;
-      padding:8px 10px;
-      border-radius:12px;
+      width:90px; padding:8px 10px; border-radius:12px;
       border:1px solid rgba(255,255,255,.10);
       background: rgba(0,0,0,.25);
       color:var(--text);
-      font-size:14px;
-      outline:none;
+      font-size:14px; outline:none;
     }
     .controls input[type="text"]{
-      width:520px;
-      padding:8px 10px;
-      border-radius:12px;
+      width:520px; padding:8px 10px; border-radius:12px;
       border:1px solid rgba(255,255,255,.10);
       background: rgba(0,0,0,.25);
       color:var(--text);
-      font-size:13px;
-      outline:none;
+      font-size:13px; outline:none;
       font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
-    }
-    .controls input:focus{
-      border-color: rgba(31,166,122,.65);
-      box-shadow: 0 0 0 2px rgba(31,166,122,.20);
     }
     button{
       padding:10px 12px;
@@ -137,18 +111,9 @@
       box-shadow: var(--shadow);
       background: rgba(0,0,0,.18);
     }
-
-    table{
-      width:100%;
-      border-collapse:separate;
-      border-spacing:0;
-      font-size:14px;
-    }
-
+    table{ width:100%; border-collapse:separate; border-spacing:0; font-size:14px; }
     thead th{
-      position: sticky;
-      top: 0;
-      z-index: 5;
+      position: sticky; top: 0; z-index: 5;
       background: rgba(14,20,34,.92);
       backdrop-filter: blur(6px);
       color: var(--muted);
@@ -160,21 +125,19 @@
       text-align:left;
       white-space:nowrap;
     }
-
     tbody td{
       padding: 12px 12px;
       border-bottom: 1px solid rgba(255,255,255,.06);
       vertical-align: middle;
       white-space:nowrap;
     }
-
     tbody tr:nth-child(odd){ background: var(--rowA); }
     tbody tr:nth-child(even){ background: var(--rowB); }
     tbody tr:hover{ background: var(--rowHover); }
 
     .rank{ width:64px; font-weight:1100; font-size:15px; }
     .points{ font-weight:1200; font-size:16px; }
-    .muted{ color: var(--muted); }
+    .right{ text-align:right; }
     .small{ font-size:12px; color: var(--muted); }
 
     .badge{
@@ -189,30 +152,6 @@
     .badge.good{ border-color: rgba(31,166,122,.55); color:#40e3a8; }
     .badge.warn{ border-color: rgba(255,204,0,.55); color:#ffcc00; }
     .badge.bad { border-color: rgba(255,92,92,.55); color:#ff7a7a; }
-
-    .nameCell{
-      display:flex; gap:10px; align-items:center;
-      min-width: 260px;
-    }
-    .alias{
-      font-weight:1100;
-      font-size:15px;
-      cursor: text;
-      padding:4px 8px;
-      border-radius:10px;
-      border:1px solid transparent;
-    }
-    .alias:hover{
-      border-color: rgba(255,255,255,.14);
-      background: rgba(0,0,0,.10);
-    }
-    .alias[contenteditable="true"]{
-      border-color: rgba(31,166,122,.65);
-      background: rgba(0,0,0,.22);
-      outline:none;
-    }
-
-    .right{ text-align:right; }
   </style>
 </head>
 <body>
@@ -220,9 +159,7 @@
   <div class="top">
     <div>
       <h1>Stableford Scoreboard</h1>
-      <div class="sub">
-        Hoogste score staat altijd bovenaan. Dubbelklik op een naam om alias aan te passen (alleen op dit scherm).
-      </div>
+      <div class="sub">Hoogste score bovenaan. Roepnaam komt van check-in (PLAYERS.display_name). Fallback is player_id.</div>
     </div>
     <div class="meta">
       <span class="pill" id="pillEvent">event: —</span>
@@ -239,6 +176,12 @@
     </div>
 
     <div class="box">
+      <label for="eventInput">Event</label>
+      <input id="eventInput" type="text" placeholder="SF2026" />
+      <button onclick="applyEvent()">Use Event</button>
+    </div>
+
+    <div class="box">
       <label for="refreshSec">Refresh (sec)</label>
       <input id="refreshSec" type="number" min="5" max="600" step="1" value="30" />
       <button onclick="applyRefresh()">Apply</button>
@@ -247,14 +190,14 @@
     <button onclick="refreshNow()">Refresh now</button>
   </div>
 
-  <div class="status" id="status">Status: vul API in en klik “Use API”.</div>
+  <div class="status" id="status">Status: vul API + event in.</div>
 
   <div class="tableWrap">
     <table>
       <thead>
         <tr>
           <th class="rank">#</th>
-          <th>Speler (alias)</th>
+          <th>Speler</th>
           <th class="right">Punten</th>
           <th class="right">Hole</th>
           <th class="right">Totaal holes</th>
@@ -266,7 +209,7 @@
         </tr>
       </thead>
       <tbody id="tbody">
-        <tr><td colspan="10" class="muted" style="padding:14px 12px;">Geen data…</td></tr>
+        <tr><td colspan="10" class="small" style="padding:14px 12px;">Geen data…</td></tr>
       </tbody>
     </table>
   </div>
@@ -274,35 +217,15 @@
 
 <script>
   const qs = new URLSearchParams(location.search);
-  const roundId = qs.get('round_id') || qs.get('round') || '';
-
-  // API can come from:
-  // - ?api=...
-  // - localStorage (stable_sb_api)
-  // - manual input
   let api = qs.get('api') || localStorage.getItem('stable_sb_api') || '';
+  let eventCode = qs.get('event_code') || localStorage.getItem('stable_sb_event') || '';
 
   function $(id){ return document.getElementById(id); }
-  function trunc(s,n){ s=String(s||''); return s.length>n ? s.slice(0,n-1)+'…' : s; }
   function setStatus(msg){ $('status').textContent = 'Status: ' + msg; }
-
-  async function apiGet(params){
-    const u = new URL(api);
-    Object.entries(params).forEach(([k,v])=> u.searchParams.set(k, String(v)));
-    const res = await fetch(u.toString());
-    const text = await res.text();
-    let json=null; try{ json=JSON.parse(text); }catch{}
-    return {res, text, json};
+  function escapeHtml(s){
+    return String(s ?? '').replaceAll('&','&amp;').replaceAll('<','&lt;').replaceAll('>','&gt;');
   }
-
-  function aliasKey(pid){ return `stable_alias_${roundId}_${pid}`; }
-  function getAlias(pid){ return localStorage.getItem(aliasKey(pid)) || ''; }
-  function setAlias(pid, name){ localStorage.setItem(aliasKey(pid), String(name||'').trim()); }
-
-  function parseIso(iso){
-    const t = Date.parse(iso || '');
-    return isNaN(t) ? null : t;
-  }
+  function parseIso(iso){ const t = Date.parse(iso || ''); return isNaN(t) ? null : t; }
   function fmtDuration(ms){
     if (ms === null || ms === undefined) return '—';
     const s = Math.max(0, Math.floor(ms/1000));
@@ -315,77 +238,72 @@
     if (!isFinite(msPerHole) || msPerHole <= 0) return '—';
     return fmtDuration(msPerHole);
   }
-
-  function escapeHtml(s){
-    return String(s ?? '')
-      .replaceAll('&','&amp;')
-      .replaceAll('<','&lt;')
-      .replaceAll('>','&gt;');
-  }
-
-  function statusBadge(status){
+  function badge(status){
     if (status === 'LIVE') return `<span class="badge good">LIVE</span>`;
     if (status === 'FINISHED') return `<span class="badge warn">FINISHED</span>`;
     return `<span class="badge bad">NO CHECK-IN</span>`;
   }
 
+  async function apiGet(params){
+    const u = new URL(api);
+    Object.entries(params).forEach(([k,v])=> u.searchParams.set(k, String(v)));
+    const res = await fetch(u.toString());
+    const text = await res.text();
+    let json=null; try{ json=JSON.parse(text); }catch{}
+    return {res, text, json};
+  }
+
   function computeRow(round, player, sbRow){
     const now = Date.now();
-    const totalPoints = Number(sbRow?.total_points || 0);
+    const points = Number(sbRow?.total_points || 0);
+    const thru = Number(sbRow?.thru || 0); // internal only
     const totalHoles = Number(player?.holes || round?.holes || 18) || 18;
-
-    // thru is only used internally to compute holeNow/time; not displayed
-    const thru = Number(sbRow?.thru || 0);
     const holeNow = (thru >= totalHoles) ? 'KLAAR' : String(thru + 1);
 
     const checkinMs = parseIso(player?.checkin_time);
     const avg = (checkinMs && thru > 0) ? ((now - checkinMs) / thru) : null;
 
-    // time on current hole:
-    // if STABLEFORD has updated_at -> Code.gs can return last_update_ts in scoreboard entry
     const lastUpdate = parseIso(sbRow?.last_update_ts);
     const base = lastUpdate || checkinMs;
     const onHole = base ? (now - base) : null;
 
-    const status =
-      String(player?.checked_in || '').toUpperCase() === 'TRUE'
-        ? (thru >= totalHoles ? 'FINISHED' : 'LIVE')
-        : 'NOT CHECKED-IN';
+    const checked = String(player?.checked_in || '').toUpperCase() === 'TRUE';
+    const status = checked ? (thru >= totalHoles ? 'FINISHED' : 'LIVE') : 'NOT CHECKED-IN';
+
+    const displayName = String(player?.display_name || '').trim();
+    const name = displayName ? displayName : String(player?.player_id || sbRow?.player_id || '').trim();
+    const pid = String(player?.player_id || sbRow?.player_id || '').trim();
 
     return {
-      player_id: player?.player_id || sbRow?.player_id || '',
-      points: totalPoints,
+      player_id: pid,
+      name,
+      points,
       holeNow,
       totalHoles,
       hcp: player?.hcp ?? '—',
       playing_hcp: player?.playing_hcp ?? '—',
       avgMs: avg,
       onHoleMs: onHole,
-      status
+      status,
+      loop_id: player?.loop_id || '—',
+      tee: player?.tee || '—',
+      gender: player?.gender || '—'
     };
   }
 
-  function renderTable(rows, playersById){
-    // sort: points desc
+  function render(rows, round){
     rows.sort((a,b)=>{
       if (b.points !== a.points) return b.points - a.points;
       return String(a.player_id).localeCompare(String(b.player_id));
     });
 
-    const tbody = $('tbody');
+    const tb = $('tbody');
     if (!rows.length){
-      tbody.innerHTML = `<tr><td colspan="10" class="muted" style="padding:14px 12px;">Geen spelers…</td></tr>`;
+      tb.innerHTML = `<tr><td colspan="10" class="small" style="padding:14px 12px;">Geen spelers…</td></tr>`;
       return;
     }
 
-    const html = rows.map((r, i)=>{
-      const pid = r.player_id;
-      const p = playersById[pid] || {};
-      const alias = getAlias(pid) || pid;
-
-      const avgTxt = fmtAvg(r.avgMs);
-      const onHoleTxt = fmtDuration(r.onHoleMs);
-
+    tb.innerHTML = rows.map((r, i)=>{
       const holeBadge = (r.holeNow === 'KLAAR')
         ? `<span class="badge warn">KLAAR</span>`
         : `<span class="badge good">${r.holeNow}</span>`;
@@ -393,78 +311,40 @@
       return `
         <tr>
           <td class="rank">${i+1}</td>
-
           <td>
-            <div class="nameCell">
-              <span class="badge">${pid}</span>
-              <div class="alias" data-pid="${pid}" title="Dubbelklik om te wijzigen">${escapeHtml(alias)}</div>
+            <div style="display:flex; gap:10px; align-items:center;">
+              <span class="badge">${escapeHtml(r.player_id)}</span>
+              <span style="font-weight:1100; font-size:15px;">${escapeHtml(r.name)}</span>
             </div>
-            <div class="small muted">
-              ${escapeHtml(p.loop_id || '—')} • ${escapeHtml(p.tee || '—')} • ${escapeHtml(p.gender || '—')}
-            </div>
+            <div class="small">${escapeHtml(r.loop_id)} • ${escapeHtml(r.tee)} • ${escapeHtml(r.gender)}</div>
           </td>
-
           <td class="right points">${r.points}</td>
           <td class="right">${holeBadge}</td>
           <td class="right">${r.totalHoles}</td>
           <td class="right">${escapeHtml(String(r.hcp))}</td>
           <td class="right">${escapeHtml(String(r.playing_hcp))}</td>
-          <td class="right">${avgTxt}</td>
-          <td class="right">${onHoleTxt}</td>
-          <td>${statusBadge(r.status)}</td>
+          <td class="right">${fmtAvg(r.avgMs)}</td>
+          <td class="right">${fmtDuration(r.onHoleMs)}</td>
+          <td>${badge(r.status)}</td>
         </tr>
       `;
     }).join('');
 
-    tbody.innerHTML = html;
-
-    // alias editing (dblclick)
-    tbody.querySelectorAll('.alias').forEach(el=>{
-      el.addEventListener('dblclick', ()=>{
-        el.setAttribute('contenteditable','true');
-        el.focus();
-        const range = document.createRange();
-        range.selectNodeContents(el);
-        const sel = window.getSelection();
-        sel.removeAllRanges(); sel.addRange(range);
-      });
-
-      el.addEventListener('keydown', (ev)=>{
-        if (ev.key === 'Enter'){ ev.preventDefault(); el.blur(); }
-        if (ev.key === 'Escape'){
-          ev.preventDefault();
-          const pid = el.dataset.pid;
-          const old = getAlias(pid) || pid;
-          el.textContent = old;
-          el.blur();
-        }
-      });
-
-      el.addEventListener('blur', ()=>{
-        const pid = el.dataset.pid;
-        const val = String(el.textContent || '').trim();
-        if (!val || val === pid){
-          localStorage.removeItem(aliasKey(pid));
-          el.textContent = pid;
-        } else {
-          setAlias(pid, val);
-          el.textContent = val;
-        }
-        el.removeAttribute('contenteditable');
-      });
-    });
+    $('pillEvent').textContent = 'event: ' + (round?.event_code || eventCode || '—');
+    $('pillRound').textContent = 'round: ' + (round?.round_id || '—');
+    $('pillUpdated').textContent = 'updated: ' + new Date().toLocaleTimeString();
   }
 
   let timer = null;
 
   async function refreshNow(){
     try{
-      if (!api) return setStatus('API ontbreekt. Vul API in en klik “Use API”.');
-      if (!roundId) return setStatus('round_id ontbreekt in URL (?round_id=...)');
+      if (!api) return setStatus('API ontbreekt.');
+      if (!eventCode) return setStatus('Event ontbreekt.');
 
       setStatus('laden…');
+      const r = await apiGet({ action:'roundState', event_code: eventCode });
 
-      const r = await apiGet({ action:'roundState', round_id: roundId });
       if (!r.json || !r.json.ok){
         return setStatus('roundState fout: ' + (r.json?.error || r.text));
       }
@@ -474,15 +354,10 @@
       const scoreboard = Array.isArray(r.json.scoreboard) ? r.json.scoreboard : [];
 
       const playersById = {};
-      for (const p of players){
-        playersById[String(p.player_id||'').trim()] = p;
-      }
+      for (const p of players) playersById[String(p.player_id||'').trim()] = p;
 
       const sbByPid = {};
-      for (const s of scoreboard){
-        const pid = String(s.player_id||'').trim();
-        sbByPid[pid] = s;
-      }
+      for (const s of scoreboard) sbByPid[String(s.player_id||'').trim()] = s;
 
       const rows = [];
       for (const p of players){
@@ -490,17 +365,10 @@
         rows.push(computeRow(round, p, sbByPid[pid] || null));
       }
       for (const pid of Object.keys(sbByPid)){
-        if (!playersById[pid]){
-          rows.push(computeRow(round, { player_id: pid }, sbByPid[pid]));
-        }
+        if (!playersById[pid]) rows.push(computeRow(round, { player_id: pid }, sbByPid[pid]));
       }
 
-      $('pillEvent').textContent = 'event: ' + (round.event_code || '—');
-      $('pillRound').textContent = 'round: ' + (round.round_id || roundId || '—');
-      $('pillUpdated').textContent = 'updated: ' + new Date().toLocaleTimeString();
-
-      renderTable(rows, playersById);
-
+      render(rows, round);
       setStatus(`OK • spelers: ${players.length} • refresh elke ${$('refreshSec').value}s`);
     }catch(e){
       setStatus('Fout: ' + (e?.message || e));
@@ -514,36 +382,37 @@
     $('refreshSec').value = String(sec);
 
     if (timer) clearInterval(timer);
-    timer = setInterval(refreshNow, sec * 1000);
+    timer = setInterval(refreshNow, sec*1000);
     refreshNow();
   }
 
   function applyApi(){
     const v = $('apiInput').value.trim();
-    if (!v){
-      api = '';
-      localStorage.removeItem('stable_sb_api');
-      return setStatus('API leeg gemaakt. Vul opnieuw in.');
-    }
+    if (!v){ api=''; localStorage.removeItem('stable_sb_api'); return setStatus('API leeg.'); }
     api = v;
     localStorage.setItem('stable_sb_api', api);
-    setStatus('API ingesteld. Laden…');
-    applyRefresh(); // starts 30s default unless changed
+    setStatus('API ingesteld.');
+    applyRefresh();
+  }
+
+  function applyEvent(){
+    const v = $('eventInput').value.trim();
+    if (!v){ eventCode=''; localStorage.removeItem('stable_sb_event'); return setStatus('Event leeg.'); }
+    eventCode = v;
+    localStorage.setItem('stable_sb_event', eventCode);
+    setStatus('Event ingesteld.');
+    applyRefresh();
   }
 
   (function init(){
-    $('pillRound').textContent = 'round: ' + (roundId || '—');
     $('apiInput').value = api || '';
-    $('refreshSec').value = '30'; // default 30
+    $('eventInput').value = eventCode || '';
+    $('refreshSec').value = '30';
 
-    if (!roundId) return setStatus('round_id ontbreekt in URL (?round_id=...)');
-
-    // If api already known, start right away
-    if (api){
-      setStatus('API geladen uit URL/localStorage. Laden…');
+    if (api && eventCode){
       applyRefresh();
     } else {
-      setStatus('Vul API in en klik “Use API”.');
+      setStatus('Vul API + event in.');
     }
   })();
 </script>
