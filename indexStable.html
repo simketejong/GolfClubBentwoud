@@ -93,7 +93,6 @@
 
 <body>
 <div class="wrap">
-  <!-- CHECK-IN -->
   <div class="card" id="cardCheckin">
     <h1>Stableford</h1>
     <div class="sub">Vul event code in en check-in. Daarna kun je per hole slagen invoeren.</div>
@@ -108,10 +107,9 @@
     <div class="status" id="status">Status: klaar om in te checken.</div>
   </div>
 
-  <!-- SCORE -->
   <div class="card" id="cardScore" style="display:none;">
     <h1>Score invoer</h1>
-    <div class="sub" id="subInfo">Vul slagen in en verzend. Na succes ga je automatisch door.</div>
+    <div class="sub">Vul slagen in en verzend. Na succes ga je automatisch door.</div>
 
     <div class="row">
       <div class="kpi">
@@ -174,7 +172,6 @@
     }
   }
 
-  // state
   let cfg = { gps_timeout_seconds: 5, gps_enable_high_accuracy: false, gps_on_score_submit: true };
   let checkedIn = false;
   let holes = 18;
@@ -294,11 +291,14 @@
         gps = await getGpsOnce(cfg.gps_timeout_seconds, cfg.gps_enable_high_accuracy);
       }
 
+      const displayName = String($('displayName').value || '').trim();
+
       const payload = {
         action: 'submitScore',
         event_code: eventCode,
         player_id: pid,
         token: token,
+        display_name: displayName,   // ✅ stuur altijd mee (niet opslaan in sheets)
         hole: currentHole,
         strokes: strokes,
         ...gps
@@ -344,10 +344,8 @@
     if (!api) setStatus('API ontbreekt in URL (?api=...)');
     if (!pid) setStatus('pid ontbreekt in URL (?pid=...)');
 
-    // kleine UX: onthoud laatst gebruikte event_code
     const saved = localStorage.getItem('stable_last_event') || '';
     if (saved) $('eventCode').value = saved;
-
     $('eventCode').addEventListener('change', ()=>{
       localStorage.setItem('stable_last_event', String($('eventCode').value||'').trim());
     });
