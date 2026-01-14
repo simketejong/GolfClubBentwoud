@@ -6,22 +6,13 @@
   <title>Stableford – Scoreboard</title>
   <style>
     :root{
-      --bg:#070A12;
-      --card:#0E1422;
-      --line:#24304A;
-      --text:#F3F6FF;
-      --muted:#A7B1C8;
-
+      --bg:#070A12; --card:#0E1422; --line:#24304A; --text:#F3F6FF; --muted:#A7B1C8;
       --shadow: 0 18px 48px rgba(0,0,0,.50);
       --r:18px;
-
       --rowA: rgba(255,255,255,.03);
       --rowB: rgba(255,255,255,.06);
       --rowHover: rgba(31,166,122,.10);
-
-      --good:#0F6A4F;
-      --warn:#8A6D00;
-      --bad:#7A1F1F;
+      --good:#0F6A4F; --warn:#8A6D00; --bad:#7A1F1F;
     }
     *{ box-sizing:border-box; }
     body{
@@ -159,7 +150,7 @@
   <div class="top">
     <div>
       <h1>Stableford Scoreboard</h1>
-      <div class="sub">Hoogste score bovenaan. Roepnaam komt van check-in (PLAYERS.display_name). Fallback is player_id.</div>
+      <div class="sub">Roepnaam is LIVE (niet opgeslagen). Verschijnt zodra iemand checkt-in of een score verzendt.</div>
     </div>
     <div class="meta">
       <span class="pill" id="pillEvent">event: —</span>
@@ -253,10 +244,10 @@
     return {res, text, json};
   }
 
-  function computeRow(round, player, sbRow){
+  function computeRow(round, player, sbRow, liveNames){
     const now = Date.now();
     const points = Number(sbRow?.total_points || 0);
-    const thru = Number(sbRow?.thru || 0); // internal only
+    const thru = Number(sbRow?.thru || 0);
     const totalHoles = Number(player?.holes || round?.holes || 18) || 18;
     const holeNow = (thru >= totalHoles) ? 'KLAAR' : String(thru + 1);
 
@@ -270,9 +261,9 @@
     const checked = String(player?.checked_in || '').toUpperCase() === 'TRUE';
     const status = checked ? (thru >= totalHoles ? 'FINISHED' : 'LIVE') : 'NOT CHECKED-IN';
 
-    const displayName = String(player?.display_name || '').trim();
-    const name = displayName ? displayName : String(player?.player_id || sbRow?.player_id || '').trim();
     const pid = String(player?.player_id || sbRow?.player_id || '').trim();
+    const liveName = (liveNames && pid && liveNames[pid]) ? String(liveNames[pid] || '').trim() : '';
+    const name = liveName ? liveName : pid;
 
     return {
       player_id: pid,
@@ -352,6 +343,7 @@
       const round = r.json.round || {};
       const players = Array.isArray(r.json.players) ? r.json.players : [];
       const scoreboard = Array.isArray(r.json.scoreboard) ? r.json.scoreboard : [];
+      const liveNames = r.json.live_names || {};
 
       const playersById = {};
       for (const p of players) playersById[String(p.player_id||'').trim()] = p;
@@ -362,10 +354,10 @@
       const rows = [];
       for (const p of players){
         const pid = String(p.player_id||'').trim();
-        rows.push(computeRow(round, p, sbByPid[pid] || null));
+        rows.push(computeRow(round, p, sbByPid[pid] || null, liveNames));
       }
       for (const pid of Object.keys(sbByPid)){
-        if (!playersById[pid]) rows.push(computeRow(round, { player_id: pid }, sbByPid[pid]));
+        if (!playersById[pid]) rows.push(computeRow(round, { player_id: pid }, sbByPid[pid], liveNames));
       }
 
       render(rows, round);
