@@ -6,16 +6,10 @@
   <title>Stableford – Score invoer</title>
   <style>
     :root{
-      --bg:#070A12;
-      --card:#0E1422;
-      --line:#24304A;
-      --text:#F3F6FF;
-      --muted:#A7B1C8;
-
+      --bg:#070A12; --line:#24304A; --text:#F3F6FF; --muted:#A7B1C8;
       --good:#0F6A4F; --goodBorder:#1FA67A;
       --warn:#8A6D00; --warnBorder:#FFCC00;
       --bad:#7A1F1F;  --badBorder:#FF5C5C;
-
       --shadow: 0 14px 40px rgba(0,0,0,.45);
       --r:18px;
     }
@@ -30,7 +24,6 @@
         var(--bg);
     }
     .wrap{ max-width:520px; margin:0 auto; padding:14px 12px 24px; }
-
     .card{
       border:1px solid var(--line);
       border-radius:var(--r);
@@ -38,30 +31,9 @@
       box-shadow: var(--shadow);
       padding:14px;
     }
-
     h1{ margin:0; font-size:18px; letter-spacing:.2px; }
     .sub{ margin-top:6px; color:var(--muted); font-size:12.5px; line-height:1.35; }
-
-    .row{ display:flex; gap:10px; margin-top:12px; }
-    .row > *{ flex:1; }
-
-    .kpi{
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(0,0,0,.18);
-      border-radius:16px;
-      padding:12px 12px;
-    }
-    .k{ color:var(--muted); font-size:12px; }
-    .v{ margin-top:4px; font-size:24px; font-weight:1100; letter-spacing:.2px; }
-
-    label{
-      display:block;
-      margin-top:12px;
-      margin-bottom:6px;
-      color:var(--muted);
-      font-size:12px;
-      font-weight:900;
-    }
+    label{ display:block; margin-top:12px; margin-bottom:6px; color:var(--muted); font-size:12px; font-weight:900; }
     input{
       width:100%;
       padding:14px 12px;
@@ -72,11 +44,7 @@
       font-size:18px;
       outline:none;
     }
-    input:focus{
-      border-color: var(--goodBorder);
-      box-shadow: 0 0 0 2px rgba(31,166,122,.25);
-    }
-
+    input:focus{ border-color: var(--goodBorder); box-shadow: 0 0 0 2px rgba(31,166,122,.25); }
     button{
       width:100%;
       margin-top:14px;
@@ -96,11 +64,8 @@
       color:#7f8aa3;
       cursor:not-allowed;
     }
-    .sending{
-      background: var(--warn) !important;
-      border-color: var(--warnBorder) !important;
-    }
-
+    .btnGood{ background: var(--good); border-color: var(--goodBorder); }
+    .sending{ background: var(--warn) !important; border-color: var(--warnBorder) !important; }
     .status{
       margin-top:12px;
       border:1px solid rgba(255,255,255,.08);
@@ -113,32 +78,37 @@
       min-height:44px;
       white-space:pre-wrap;
     }
-
-    /* ultra mobile spacing */
-    @media (max-width: 380px){
-      .wrap{ padding:12px 10px 22px; }
-      .v{ font-size:22px; }
-      input{ font-size:17px; padding:13px 11px; }
-      button{ font-size:17px; padding:15px 12px; }
+    .row{ display:flex; gap:10px; margin-top:12px; }
+    .row > *{ flex:1; }
+    .kpi{
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(0,0,0,.18);
+      border-radius:16px;
+      padding:12px 12px;
     }
+    .k{ color:var(--muted); font-size:12px; }
+    .v{ margin-top:4px; font-size:24px; font-weight:1100; letter-spacing:.2px; }
   </style>
 </head>
 
 <body>
 <div class="wrap">
-  <!-- CHECK-IN SCREEN -->
+  <!-- CHECK-IN -->
   <div class="card" id="cardCheckin">
     <h1>Stableford</h1>
-    <div class="sub">Stap 1: check-in. Daarna verschijnt de score-invoer.</div>
+    <div class="sub">Vul event code in en check-in. Daarna kun je per hole slagen invoeren.</div>
 
-    <button id="btnCheckin" style="margin-top:14px; border-color: var(--goodBorder); background: var(--good);" onclick="checkin()">
-      Check-in
-    </button>
+    <label for="eventCode">Event code</label>
+    <input id="eventCode" placeholder="bijv. SF2026" autocapitalize="characters" />
 
-    <div class="status" id="status">Status: laden…</div>
+    <label for="displayName">Roepnaam (optioneel)</label>
+    <input id="displayName" placeholder="bijv. Simke" />
+
+    <button id="btnCheckin" class="btnGood" onclick="checkin()">Check-in</button>
+    <div class="status" id="status">Status: klaar om in te checken.</div>
   </div>
 
-  <!-- SCORING SCREEN (shown after check-in) -->
+  <!-- SCORE -->
   <div class="card" id="cardScore" style="display:none;">
     <h1>Score invoer</h1>
     <div class="sub" id="subInfo">Vul slagen in en verzend. Na succes ga je automatisch door.</div>
@@ -158,17 +128,15 @@
     <input id="strokes" inputmode="numeric" placeholder="bijv. 5" />
 
     <button id="btnSend" onclick="submitScore()" disabled>Verzenden…</button>
-
     <div class="status" id="scoreStatus">Wacht op invoer.</div>
   </div>
 </div>
 
 <script>
   const qs = new URLSearchParams(location.search);
-  const api     = qs.get('api') || '';
-  const roundId = qs.get('round_id') || qs.get('round') || '';
-  const pid     = qs.get('pid') || qs.get('player_id') || '';
-  const token   = qs.get('t') || qs.get('token') || '';
+  const api   = qs.get('api') || '';
+  const pid   = qs.get('pid') || qs.get('player_id') || '';
+  const token = qs.get('t') || qs.get('token') || '';
 
   function $(id){ return document.getElementById(id); }
   function setStatus(msg){ $('status').textContent = 'Status: ' + msg; }
@@ -186,13 +154,41 @@
     let json=null; try{ json=JSON.parse(text); }catch{}
     return {res, text, json};
   }
-  async function apiGet(params){
+
+  function validateStrokes(){
+    const s = Number(String($('strokes').value||'').trim());
+    const ok = isFinite(s) && s>=1 && s<=25;
+    $('btnSend').disabled = !ok;
+    setScoreStatus(ok ? `Klaar om hole ${currentHole} te verzenden.` : 'Vul slagen in (1–25).');
+  }
+
+  function setSending(on){
+    const b = $('btnSend');
+    if (on){
+      b.classList.add('sending');
+      b.disabled = true;
+      b.textContent = 'Versturen…';
+    } else {
+      b.classList.remove('sending');
+      validateStrokes();
+    }
+  }
+
+  // state
+  let cfg = { gps_timeout_seconds: 5, gps_enable_high_accuracy: false, gps_on_score_submit: true };
+  let checkedIn = false;
+  let holes = 18;
+  let currentHole = 1;
+  let lastPoints = 0;
+  let eventCode = '';
+
+  async function loadConfig(){
     const u = new URL(api);
-    Object.entries(params).forEach(([k,v])=> u.searchParams.set(k, String(v)));
+    u.searchParams.set('action','config');
     const res = await fetch(u.toString());
     const text = await res.text();
     let json=null; try{ json=JSON.parse(text); }catch{}
-    return {res, text, json};
+    if (json && json.ok && json.config) cfg = Object.assign(cfg, json.config);
   }
 
   async function getGpsOnce(timeoutSeconds, highAcc){
@@ -226,120 +222,67 @@
     });
   }
 
-  // state
-  let cfg = { gps_timeout_seconds: 5, gps_enable_high_accuracy: false, gps_on_score_submit: true };
-  let checkedIn = false;
-  let holes = 18;
-  let currentHole = 1;
-  let roundEventCode = '';
-  let lastPoints = 0;
-
   function showScoreScreen(){
     $('cardCheckin').style.display = 'none';
     $('cardScore').style.display = 'block';
-  }
-
-  function updateUI(){
     $('holeNow').textContent = String(currentHole);
-    $('pointsNow').textContent = String(lastPoints ?? 0);
+    $('pointsNow').textContent = String(lastPoints || 0);
+    $('strokes').value = '';
     validateStrokes();
-  }
-
-  function validateStrokes(){
-    const s = Number(String($('strokes').value||'').trim());
-    const ok = isFinite(s) && s>=1 && s<=25;
-    $('btnSend').disabled = !ok;
-    $('btnSend').textContent = ok ? 'Verzenden…' : 'Verzenden…';
-    setScoreStatus(ok ? `Klaar om hole ${currentHole} te verzenden.` : 'Vul slagen in (1–25).');
-  }
-
-  function setSending(on){
-    const b = $('btnSend');
-    if (on){
-      b.classList.add('sending');
-      b.disabled = true;
-      b.textContent = 'Verzenden…';
-    } else {
-      b.classList.remove('sending');
-      validateStrokes();
-    }
-  }
-
-  async function loadConfig(){
-    const r = await apiGet({ action:'config' });
-    if (r.json && r.json.ok && r.json.config){
-      cfg = Object.assign(cfg, r.json.config);
-    }
-  }
-
-  async function refreshFromRoundState(){
-    const r = await apiGet({ action:'roundState', round_id: roundId });
-    if (!r.json || !r.json.ok) throw new Error(r.json?.error || r.text);
-
-    roundEventCode = String(r.json.round?.event_code || '').trim();
-
-    const players = Array.isArray(r.json.players) ? r.json.players : [];
-    const me = players.find(p => p.player_id === pid) || null;
-    checkedIn = String(me?.checked_in || '').toUpperCase() === 'TRUE';
-    holes = Number(me?.holes || r.json.round?.holes || 18) || 18;
-
-    const sb = Array.isArray(r.json.scoreboard) ? r.json.scoreboard : [];
-    const myRow = sb.find(x => x.player_id === pid);
-    lastPoints = Number(myRow?.total_points || 0);
-
-    const thru = Number(myRow?.thru || 0);
-    currentHole = Math.min(thru + 1, holes);
-    if (currentHole < 1) currentHole = 1;
-
-    return true;
   }
 
   async function checkin(){
     try{
       if (!api) return setStatus('API ontbreekt in URL (?api=...)');
-      if (!roundId) return setStatus('round_id ontbreekt in URL (?round_id=...)');
       if (!pid) return setStatus('pid ontbreekt in URL (?pid=...)');
       if (!token) return setStatus('token ontbreekt (t=...)');
 
-      setStatus('Check-in bezig…');
+      eventCode = String($('eventCode').value || '').trim();
+      if (!eventCode) return setStatus('Vul event code in.');
 
-      await refreshFromRoundState(); // haalt event_code op uit ROUNDS
-      if (!roundEventCode) throw new Error('event_code ontbreekt in ROUNDS');
+      const displayName = String($('displayName').value || '').trim();
+
+      $('btnCheckin').disabled = true;
+      setStatus('Check-in bezig…');
 
       await loadConfig();
       const gps = await getGpsOnce(cfg.gps_timeout_seconds, cfg.gps_enable_high_accuracy);
 
       const payload = {
         action: 'checkin',
-        round_id: roundId,
+        event_code: eventCode,
         player_id: pid,
         token: token,
-        event_code: roundEventCode,
+        display_name: displayName,
         ...gps
       };
 
       const r = await apiPost(payload);
       if (r.json && r.json.ok){
+        checkedIn = true;
+        holes = Number(r.json.holes || 18) || 18;
+        currentHole = 1;
+        lastPoints = 0;
+
         alert('✅ Check-in gelukt.');
-        // haal opnieuw state zodat checked_in zeker TRUE is + hole/points kloppen
-        await refreshFromRoundState();
         showScoreScreen();
-        $('strokes').value = '';
-        updateUI();
       } else {
-        alert('❌ Check-in fout: ' + (r.json?.error || r.text));
-        setStatus('Check-in fout: ' + (r.json?.error || r.text));
+        $('btnCheckin').disabled = false;
+        const msg = (r.json?.error || r.text || 'Onbekende fout');
+        alert('❌ Check-in fout: ' + msg);
+        setStatus('Check-in fout: ' + msg);
       }
     }catch(e){
-      alert('❌ Check-in fout: ' + (e?.message || e));
-      setStatus('Check-in fout: ' + (e?.message || e));
+      $('btnCheckin').disabled = false;
+      const msg = (e?.message || e);
+      alert('❌ Check-in fout: ' + msg);
+      setStatus('Check-in fout: ' + msg);
     }
   }
 
   async function submitScore(){
     try{
       if (!checkedIn) return alert('Eerst check-in.');
-
       const strokes = Number(String($('strokes').value||'').trim());
       if (!strokes || strokes < 1 || strokes > 25) return alert('Slagen ongeldig.');
 
@@ -353,10 +296,9 @@
 
       const payload = {
         action: 'submitScore',
-        round_id: roundId,
+        event_code: eventCode,
         player_id: pid,
         token: token,
-        event_code: roundEventCode, // server kan (optioneel) valideren
         hole: currentHole,
         strokes: strokes,
         ...gps
@@ -367,10 +309,9 @@
       if (r.json && r.json.ok){
         alert(`✅ Gelukt! Hole ${currentHole} opgeslagen.`);
         lastPoints = Number(r.json.total_points || lastPoints || 0);
+        $('pointsNow').textContent = String(lastPoints);
 
         if (currentHole >= holes){
-          $('holeNow').textContent = String(currentHole);
-          $('pointsNow').textContent = String(lastPoints);
           $('strokes').disabled = true;
           $('btnSend').disabled = true;
           $('btnSend').classList.remove('sending');
@@ -380,11 +321,9 @@
         }
 
         currentHole = currentHole + 1;
-        $('strokes').value = '';
-        $('pointsNow').textContent = String(lastPoints);
         $('holeNow').textContent = String(currentHole);
-
-        setSending(false); // terug naar rood/disabled totdat invoer
+        $('strokes').value = '';
+        setSending(false);
         setScoreStatus(`Volgende: hole ${currentHole}. Vul slagen in.`);
       } else {
         const msg = (r.json?.error || r.text || 'Onbekende fout');
@@ -402,25 +341,16 @@
   (function init(){
     $('strokes').addEventListener('input', validateStrokes);
 
-    if (!api) return setStatus('API ontbreekt in URL (?api=...)');
-    if (!roundId) return setStatus('round_id ontbreekt in URL (?round_id=...)');
-    if (!pid) return setStatus('pid ontbreekt in URL (?pid=...)');
+    if (!api) setStatus('API ontbreekt in URL (?api=...)');
+    if (!pid) setStatus('pid ontbreekt in URL (?pid=...)');
 
-    // Als speler al ingecheckt is, direct naar score screen
-    (async ()=>{
-      try{
-        await refreshFromRoundState();
-        if (checkedIn){
-          showScoreScreen();
-          updateUI();
-          setScoreStatus(`Vul slagen in voor hole ${currentHole}.`);
-        } else {
-          setStatus('Klaar om in te checken.');
-        }
-      }catch(e){
-        setStatus('Fout: ' + (e?.message || e));
-      }
-    })();
+    // kleine UX: onthoud laatst gebruikte event_code
+    const saved = localStorage.getItem('stable_last_event') || '';
+    if (saved) $('eventCode').value = saved;
+
+    $('eventCode').addEventListener('change', ()=>{
+      localStorage.setItem('stable_last_event', String($('eventCode').value||'').trim());
+    });
   })();
 </script>
 </body>
