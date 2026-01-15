@@ -114,7 +114,7 @@
 
     <label for="players">Spelers (1 per regel)</label>
     <textarea id="players"
-      placeholder="email,hcp,tee,gender,loop[,holes]
+      placeholder="email,hcp,teebox,gender,loopcode
 bijv:
 jan@club.nl,18.4,WIT,H,O
 piet@club.nl,9.2,GEEL,D,WO
@@ -122,9 +122,10 @@ piet@club.nl,9.2,GEEL,D,WO
 
     <div class="hint">
       Formaat per regel:<br/>
-      <code>email,hcp,tee,gender,loop</code> of <code>email,hcp,tee,gender,loop,holes</code><br/>
-      <br/>
-      Loop: <code>O W Z N</code> (9 holes) of <code>WO OZ ZW ZO</code> (18 holes)
+      <code>email,hcp,teebox,gender,loopcode</code><br/><br/>
+      Loopcodes:<br/>
+      <code>O / W / Z</code> = 9 holes • <code>N</code> = Noordwoud 9 (par3/4)<br/>
+      <code>WO / OZ / ZW / ZO</code> = 18 holes (combi lussen)<br/>
     </div>
 
     <div class="row">
@@ -140,29 +141,77 @@ piet@club.nl,9.2,GEEL,D,WO
   const status = msg => $('status').textContent = 'Status: ' + msg;
 
   function norm(s){ return String(s||'').trim(); }
-  function isEmail(s){ return s.includes('@') && s.includes('.') && s.length >= 6; }
+  function isEmail(s){
+    const e = norm(s).toLowerCase();
+    return e.includes('@') && e.includes('.') && e.length >= 6;
+  }
+
+  function normalizeLoop(loopRaw){
+    const s = norm(loopRaw).toUpperCase().replace(/\s+/g,'');
+    const map = {
+      'WO':'WEST-OOST',
+      'OZ':'OOST-ZUID',
+      'ZW':'ZUID-WEST',
+      'ZO':'ZUID-WEST',      // jouw afspraak: ZO is Zuid-West
+      'O':'OOST',
+      'W':'WEST',
+      'Z':'ZUID',
+      'N':'NOORD',
+      'NOORD':'NOORD',
+      'OOST':'OOST',
+      'WEST':'WEST',
+      'ZUID':'ZUID',
+      'WEST-OOST':'WEST-OOST',
+      'OOST-ZUID':'OOST-ZUID',
+      'ZUID-WEST':'ZUID-WEST'
+    };
+    return map[s] || s;
+  }
+
+  function inferHoles(loopNorm){
+    // 18-hole combinaties
+    const L = String(loopNorm||'').toUpperCase();
+    if (L === 'WEST-OOST' || L === 'OOST-ZUID' || L === 'ZUID-WEST') return 18;
+    // alles else = 9 (O/W/Z/NOORD)
+    return 9;
+  }
 
   function parsePlayers(){
     const lines = $('players').value.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
     const out = [];
+
     for (let i=0;i<lines.length;i++){
-      const p = lines[i].split(',').map(x=>x.trim());
-      if (p.length < 5) throw `Regel ${i+1}: te weinig velden`;
-      const [email,hcp,tee,gender,loop,holes] = p;
+      const parts = lines[i].split(',').map(x=>x.trim());
+      if (parts.length !== 5) throw `Regel ${i+1}: moet precies 5 velden zijn (email,hcp,teebox,gender,loopcode)`;
+
+      const email = parts[0];
+      const hcpStr = parts[1];
+      const tee = parts[2];
+      const gender = parts[3];
+      const loopRaw = parts[4];
+
       if (!isEmail(email)) throw `Regel ${i+1}: ongeldig e-mail`;
-      const h = Number(String(hcp).replace(',','.'));
-      if (!Number.isFinite(h)) throw `Regel ${i+1}: ongeldig hcp`;
-      const ho = holes ? Number(holes) : undefined;
-      if (ho && ho !== 9 && ho !== 18) throw `Regel ${i+1}: holes moet 9 of 18 zijn`;
+      const hcp = Number(String(hcpStr).replace(',','.'));
+      if (!Number.isFinite(hcp)) throw `Regel ${i+1}: ongeldig hcp`;
+      const teeU = norm(tee).toUpperCase();
+      if (!teeU) throw `Regel ${i+1}: teebox ontbreekt`;
+      const gU = norm(gender).toUpperCase();
+      if (!(gU === 'H' || gU === 'D')) throw `Regel ${i+1}: gender moet H of D zijn`;
+      const loop_id = normalizeLoop(loopRaw);
+      if (!loop_id) throw `Regel ${i+1}: loopcode ontbreekt`;
+
+      const holes = inferHoles(loop_id);
+
       out.push({
         email: email.toLowerCase(),
-        hcp: h,
-        tee: tee.toUpperCase(),
-        gender: gender.toUpperCase(),
-        loop_id: loop.toUpperCase(),
-        holes: ho
+        hcp,
+        tee: teeU,
+        gender: gU,
+        loop_id,
+        holes            // <-- ALTIJD meegeven, nooit "onbekend"
       });
     }
+
     if (!out.length) throw 'Geen geldige spelers';
     return out;
   }
