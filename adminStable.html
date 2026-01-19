@@ -4,54 +4,23 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>Admin – Stableford</title>
-
   <style>
-    body{
-      margin:0;
-      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial;
-      background:#070A12;
-      color:#F3F6FF;
-    }
-    .wrap{ max-width:960px; margin:0 auto; padding:18px; }
-    .card{
-      background:#0E1422;
-      border:1px solid #24304A;
-      border-radius:16px;
-      padding:16px;
-    }
+    body{ margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; background:#070A12; color:#F3F6FF; }
+    .wrap{ max-width:980px; margin:0 auto; padding:18px; }
+    .card{ background:#0E1422; border:1px solid #24304A; border-radius:16px; padding:16px; }
     h1{ margin:0; font-size:22px; }
     .sub{ margin-top:6px; color:#A7B1C8; font-size:13px; }
 
-    label{
-      display:block;
-      margin:14px 0 6px;
-      color:#A7B1C8;
-      font-size:12px;
-      font-weight:900;
-      letter-spacing:.02em;
-    }
+    label{ display:block; margin:14px 0 6px; color:#A7B1C8; font-size:12px; font-weight:900; }
     input, textarea{
-      width:100%;
-      padding:12px;
-      border-radius:12px;
-      border:1px solid #24304A;
-      background:#060A14;
-      color:#F3F6FF;
-      font-size:14px;
-      outline:none;
+      width:100%; padding:12px; border-radius:12px; border:1px solid #24304A;
+      background:#060A14; color:#F3F6FF; font-size:14px; outline:none;
     }
-    textarea{
-      min-height:240px;
-      font-family: ui-monospace, Menlo, Consolas, monospace;
-      font-size:13px;
-    }
-    input:focus, textarea:focus{
-      border-color:#1FA67A;
-      box-shadow:0 0 0 2px rgba(31,166,122,.2);
-    }
+    textarea{ min-height:240px; font-family:ui-monospace,Menlo,Consolas,monospace; font-size:13px; }
+    input:focus, textarea:focus{ border-color:#1FA67A; box-shadow:0 0 0 2px rgba(31,166,122,.2); }
 
-    .row{ display:flex; gap:12px; flex-wrap:wrap; margin-top:14px; }
     button{
+      margin-top:14px;
       padding:12px 16px;
       border-radius:14px;
       border:1px solid rgba(255,255,255,.14);
@@ -63,6 +32,9 @@
     }
     button:hover{ filter:brightness(1.1); }
 
+    .hint{ margin-top:10px; color:#A7B1C8; font-size:12.5px; line-height:1.4; }
+    .hint code{ background:#060A14; border:1px solid #24304A; border-radius:8px; padding:2px 6px; color:#F3F6FF; }
+
     .status{
       margin-top:14px;
       border:1px solid rgba(255,255,255,.12);
@@ -72,65 +44,43 @@
       color:#A7B1C8;
       font-size:13px;
       white-space:pre-wrap;
-      min-height:48px;
-    }
-
-    .hint{
-      margin-top:10px;
-      color:#A7B1C8;
-      font-size:12.5px;
-      line-height:1.4;
-    }
-    .hint code{
-      background:#060A14;
-      border:1px solid #24304A;
-      border-radius:8px;
-      padding:2px 6px;
-      font-family: ui-monospace, Menlo, Consolas, monospace;
-      color:#F3F6FF;
+      min-height:52px;
     }
   </style>
 </head>
-
 <body>
 <div class="wrap">
   <div class="card">
     <h1>Admin – Stableford</h1>
-    <div class="sub">
-      Maak één Stableford-ronde aan en verstuur de spelerslinks per e-mail.
-    </div>
+    <div class="sub">Maak 1 event aan en verstuur links naar spelers. (E-mails worden niet opgeslagen.)</div>
 
-    <label for="apiUrl">Apps Script API (exec)</label>
+    <label>Apps Script API (exec)</label>
     <input id="apiUrl" placeholder="https://script.google.com/macros/s/.../exec" />
 
-    <label for="eventCode">Event code</label>
-    <input id="eventCode" placeholder="bijv. Simke" />
+    <label>Event code</label>
+    <input id="eventCode" placeholder="bijv. Maarten01" />
 
-    <label for="adminKey">Admin key</label>
-    <input id="adminKey" placeholder="(uit CONFIG.admin_key)" />
+    <label>Admin key</label>
+    <input id="adminKey" placeholder="uit CONFIG.admin_key" />
 
-    <label for="adminEmail">Admin e-mail (samenvatting)</label>
+    <label>Admin e-mail (samenvatting)</label>
     <input id="adminEmail" type="email" placeholder="bijv. simketejong@gmail.com" />
 
-    <label for="players">Spelers (1 per regel)</label>
-    <textarea id="players"
-      placeholder="email,hcp,teebox,gender,loopcode
+    <label>Spelers (1 per regel)</label>
+    <textarea id="players" placeholder="email,hcp,teebox,gender,loopcode
 bijv:
-jan@club.nl,18.4,WIT,H,O
-piet@club.nl,9.2,GEEL,D,WO
+jan@club.nl,18.4,wit,heren,o
+piet@club.nl,9.2,Geel,dames,wo
 "></textarea>
 
     <div class="hint">
-      Formaat per regel:<br/>
-      <code>email,hcp,teebox,gender,loopcode</code><br/><br/>
-      Loopcodes:<br/>
-      <code>O / W / Z</code> = 9 holes • <code>N</code> = Noordwoud 9 (par3/4)<br/>
-      <code>WO / OZ / ZW / ZO</code> = 18 holes (combi lussen)<br/>
+      Formaat: <code>email,hcp,teebox,gender,loopcode</code><br/>
+      Teebox: wit/geel/blauw/rood/oranje (case maakt niet uit)<br/>
+      Gender: heren/h/m/man of dames/d/v/vrouw (case maakt niet uit)<br/>
+      Loop: o/w/z/n of wo/oz/zw/zo of uitgeschreven (case maakt niet uit)
     </div>
 
-    <div class="row">
-      <button onclick="createRound()">Ronde aanmaken + mails versturen</button>
-    </div>
+    <button onclick="createRound()">Ronde aanmaken + mails versturen</button>
 
     <div class="status" id="status">Status: klaar.</div>
   </div>
@@ -141,78 +91,28 @@ piet@club.nl,9.2,GEEL,D,WO
   const status = msg => $('status').textContent = 'Status: ' + msg;
 
   function norm(s){ return String(s||'').trim(); }
-  function isEmail(s){
-    const e = norm(s).toLowerCase();
-    return e.includes('@') && e.includes('.') && e.length >= 6;
-  }
-
-  function normalizeLoop(loopRaw){
-    const s = norm(loopRaw).toUpperCase().replace(/\s+/g,'');
-    const map = {
-      'WO':'WEST-OOST',
-      'OZ':'OOST-ZUID',
-      'ZW':'ZUID-WEST',
-      'ZO':'ZUID-WEST',      // jouw afspraak: ZO is Zuid-West
-      'O':'OOST',
-      'W':'WEST',
-      'Z':'ZUID',
-      'N':'NOORD',
-      'NOORD':'NOORD',
-      'OOST':'OOST',
-      'WEST':'WEST',
-      'ZUID':'ZUID',
-      'WEST-OOST':'WEST-OOST',
-      'OOST-ZUID':'OOST-ZUID',
-      'ZUID-WEST':'ZUID-WEST'
-    };
-    return map[s] || s;
-  }
-
-  function inferHoles(loopNorm){
-    // 18-hole combinaties
-    const L = String(loopNorm||'').toUpperCase();
-    if (L === 'WEST-OOST' || L === 'OOST-ZUID' || L === 'ZUID-WEST') return 18;
-    // alles else = 9 (O/W/Z/NOORD)
-    return 9;
-  }
+  function isEmail(s){ const e=norm(s).toLowerCase(); return e.includes('@') && e.includes('.') && e.length>=6; }
 
   function parsePlayers(){
     const lines = $('players').value.split(/\r?\n/).map(l=>l.trim()).filter(Boolean);
-    const out = [];
+    if (!lines.length) throw 'Geen spelers ingevoerd';
 
+    const out = [];
     for (let i=0;i<lines.length;i++){
       const parts = lines[i].split(',').map(x=>x.trim());
       if (parts.length !== 5) throw `Regel ${i+1}: moet precies 5 velden zijn (email,hcp,teebox,gender,loopcode)`;
 
       const email = parts[0];
-      const hcpStr = parts[1];
+      const hcp = Number(String(parts[1]).replace(',','.'));
       const tee = parts[2];
       const gender = parts[3];
-      const loopRaw = parts[4];
+      const loop_id = parts[4];
 
       if (!isEmail(email)) throw `Regel ${i+1}: ongeldig e-mail`;
-      const hcp = Number(String(hcpStr).replace(',','.'));
       if (!Number.isFinite(hcp)) throw `Regel ${i+1}: ongeldig hcp`;
-      const teeU = norm(tee).toUpperCase();
-      if (!teeU) throw `Regel ${i+1}: teebox ontbreekt`;
-      const gU = norm(gender).toUpperCase();
-      if (!(gU === 'H' || gU === 'D')) throw `Regel ${i+1}: gender moet H of D zijn`;
-      const loop_id = normalizeLoop(loopRaw);
-      if (!loop_id) throw `Regel ${i+1}: loopcode ontbreekt`;
 
-      const holes = inferHoles(loop_id);
-
-      out.push({
-        email: email.toLowerCase(),
-        hcp,
-        tee: teeU,
-        gender: gU,
-        loop_id,
-        holes            // <-- ALTIJD meegeven, nooit "onbekend"
-      });
+      out.push({ email: email.toLowerCase(), hcp, tee, gender, loop_id });
     }
-
-    if (!out.length) throw 'Geen geldige spelers';
     return out;
   }
 
@@ -229,6 +129,7 @@ piet@club.nl,9.2,GEEL,D,WO
       if (!isEmail(adminEmail)) throw 'Admin e-mail ongeldig';
 
       const players = parsePlayers();
+
       status('Bezig… ronde maken en e-mails versturen…');
 
       const body = new URLSearchParams();
@@ -250,9 +151,7 @@ piet@club.nl,9.2,GEEL,D,WO
       const text = await res.text();
       let json=null; try{ json=JSON.parse(text); }catch{}
 
-      if (!json || !json.ok){
-        throw json?.error || text || 'Onbekende fout';
-      }
+      if (!json || !json.ok) throw (json?.error || text || 'Onbekende fout');
 
       status(
         `✅ Gelukt\n` +
@@ -264,9 +163,8 @@ piet@club.nl,9.2,GEEL,D,WO
       );
 
       if (confirm('Ronde aangemaakt. Scoreboard openen?')){
-        window.open(json.scoreboard_url,'_blank');
+        window.open(json.scoreboard_url, '_blank');
       }
-
     }catch(e){
       status('❌ Fout: ' + e);
     }
