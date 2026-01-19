@@ -11,36 +11,36 @@
       --line:#24304A;
       --text:#F3F6FF;
       --muted:#A7B1C8;
-      --ok:#17b26a;
-      --bad:#ff5c5c;
+      --shadow:0 18px 48px rgba(0,0,0,.52);
+
+      --red:#ff5c5c;
+      --redBg: rgba(255,92,92,.12);
+      --green:#17b26a;
+      --greenBg: rgba(23,178,106,.12);
+
       --rowA:rgba(255,255,255,.035);
       --rowB:rgba(255,255,255,.075);
-      --chip:rgba(0,0,0,.25);
-      --shadow:0 18px 48px rgba(0,0,0,.52);
-      --r:18px;
       --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      --r:18px;
     }
-
     *{ box-sizing:border-box; }
     body{
       margin:0;
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial;
       background:
         radial-gradient(1200px 700px at 50% -10%, #1b2a66 0%, rgba(27,42,102,0) 55%),
         radial-gradient(900px 600px at 80% 120%, #0f5b3f55 0%, rgba(15,91,63,0) 55%),
         var(--bg);
-      color: var(--text);
+      color:var(--text);
     }
-
-    .wrap{ max-width: 1800px; margin:0 auto; padding:18px; }
+    .wrap{ max-width:1800px; margin:0 auto; padding:18px; }
     .card{
       border:1px solid var(--line);
-      border-radius: var(--r);
+      border-radius:var(--r);
       background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
       box-shadow: var(--shadow);
       padding:14px;
     }
-
     .top{
       display:flex;
       align-items:flex-end;
@@ -48,18 +48,10 @@
       gap:12px;
       flex-wrap:wrap;
     }
-
     h1{ margin:0; font-size:28px; letter-spacing:.2px; }
     .sub{ margin-top:6px; color:var(--muted); font-size:13px; line-height:1.35; }
 
-    .controls{
-      display:flex;
-      gap:10px;
-      flex-wrap:wrap;
-      align-items:flex-end;
-      justify-content:flex-end;
-    }
-
+    .controls{ display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; justify-content:flex-end; }
     label{
       display:block;
       margin:0 0 6px;
@@ -78,11 +70,8 @@
       outline:none;
       min-width: 210px;
     }
-    input:focus{
-      border-color: rgba(23,178,106,.75);
-      box-shadow: 0 0 0 2px rgba(23,178,106,.18);
-    }
-    .small{ min-width:140px; width:140px; }
+    input.small{ min-width:140px; width:140px; }
+    input:focus{ border-color: rgba(23,178,106,.75); box-shadow:0 0 0 2px rgba(23,178,106,.18); }
 
     button{
       padding:10px 12px;
@@ -96,26 +85,17 @@
       height:42px;
     }
     button:hover{ filter:brightness(1.12); }
-    button:active{ transform: translateY(1px); }
 
-    .chips{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-      align-items:center;
-      margin-top:10px;
-    }
+    .chips{ display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:10px; }
     .chip{
       border:1px solid rgba(255,255,255,.12);
-      background: var(--chip);
+      background: rgba(0,0,0,.25);
       border-radius:999px;
       padding:6px 10px;
       color:var(--muted);
       font-size:12px;
       font-family: var(--mono);
     }
-    .chip.ok{ color: #b8ffd8; border-color: rgba(23,178,106,.5); }
-    .chip.bad{ color: #ffd1d1; border-color: rgba(255,92,92,.55); }
 
     .status{
       margin-top:12px;
@@ -134,8 +114,8 @@
       width:100%;
       border-collapse:collapse;
       margin-top:12px;
-      overflow:hidden;
       border-radius:16px;
+      overflow:hidden;
       border:1px solid rgba(255,255,255,.10);
     }
     thead th{
@@ -161,21 +141,34 @@
 
     .right{ text-align:right; }
     .rank{ width:60px; color:var(--muted); font-family:var(--mono); font-size:14px; }
-    .pid{ color:var(--muted); font-family:var(--mono); font-size:13px; margin-left:8px; }
+
+    .nameTag{
+      display:inline-flex;
+      align-items:center;
+      gap:10px;
+    }
     .name{
       font-weight:1100;
       cursor:pointer;
       display:inline-block;
-      padding:2px 6px;
-      border-radius:10px;
+      padding:4px 8px;
+      border-radius:12px;
+      border:1px solid rgba(255,255,255,.10);
     }
-    .name:hover{ background: rgba(255,255,255,.08); }
+    .name.red{
+      color: var(--red);
+      border-color: rgba(255,92,92,.55);
+      background: var(--redBg);
+    }
+    .name.green{
+      color: var(--green);
+      border-color: rgba(23,178,106,.55);
+      background: var(--greenBg);
+    }
 
-    .nameEdit{
-      display:inline-flex;
-      gap:8px;
-      align-items:center;
-    }
+    .pid{ color:var(--muted); font-family:var(--mono); font-size:13px; }
+
+    .nameEdit{ display:inline-flex; gap:8px; align-items:center; }
     .nameInput{
       min-width: 260px;
       width: 260px;
@@ -210,15 +203,8 @@
       font-size:13px;
     }
 
-    .bigPoints{
-      font-weight:1200;
-      font-size:18px;
-    }
-
-    .done{
-      color:#b8ffd8;
-      font-weight:1000;
-    }
+    .bigPoints{ font-weight:1200; font-size:18px; }
+    .done{ color:#b8ffd8; font-weight:1000; }
   </style>
 </head>
 
@@ -229,7 +215,7 @@
         <div>
           <h1>Stableford Scoreboard</h1>
           <div class="sub">
-            Klik op een naam om een roepnaam (alias) in te stellen. Dit wordt <b>niet</b> opgeslagen in Sheets (alleen lokaal op dit scherm).
+            Rood = niet ingecheckt • Groen = ingecheckt • Klik op naam om alias te zetten (alleen lokaal, niet in Sheets).
           </div>
         </div>
 
@@ -265,12 +251,10 @@
             <th class="right">Holes</th>
             <th class="right">HCP</th>
             <th class="right">Playing</th>
-            <th class="right">Gem. tijd/hole</th>
-            <th class="right">Tijd op hole</th>
           </tr>
         </thead>
         <tbody id="tbody">
-          <tr><td colspan="9" style="color:var(--muted);">Geen data…</td></tr>
+          <tr><td colspan="7" style="color:var(--muted);">Geen data…</td></tr>
         </tbody>
       </table>
     </div>
@@ -278,37 +262,29 @@
 
 <script>
   const $ = (id)=>document.getElementById(id);
-
   const qs = new URLSearchParams(location.search);
   const api = qs.get('api') || '';
   let eventCode = qs.get('event_code') || '';
 
-  // Local alias store (per event|pid) only on this device/screen
-  function aliasKey(pid){ return `stable_alias|${eventCode}|${pid}`; }
-  function getAlias(pid){
-    try{ return localStorage.getItem(aliasKey(pid)) || ''; }catch{ return ''; }
+  function setStatus(msg){ $('status').textContent = 'Status: ' + msg; }
+  function escapeHtml(s){
+    return String(s??'')
+      .replaceAll('&','&amp;')
+      .replaceAll('<','&lt;')
+      .replaceAll('>','&gt;')
+      .replaceAll('"','&quot;')
+      .replaceAll("'",'&#39;');
   }
+
+  // Local aliases only (per event|pid)
+  function aliasKey(pid){ return `stable_alias|${eventCode}|${pid}`; }
+  function getAlias(pid){ try{ return localStorage.getItem(aliasKey(pid)) || ''; }catch{ return ''; } }
   function setAlias(pid, name){
     try{
       const n = String(name||'').trim();
       if (!n) localStorage.removeItem(aliasKey(pid));
       else localStorage.setItem(aliasKey(pid), n);
     }catch{}
-  }
-
-  function setStatus(msg){ $('status').textContent = 'Status: ' + msg; }
-
-  function fmtMins(ms){
-    if (!isFinite(ms) || ms < 0) return '—';
-    const s = Math.floor(ms/1000);
-    const m = Math.floor(s/60);
-    const r = s%60;
-    return `${m}:${String(r).padStart(2,'0')}`;
-  }
-
-  function parseIso(iso){
-    const t = Date.parse(String(iso||''));
-    return isNaN(t) ? null : t;
   }
 
   async function apiGet(params){
@@ -320,67 +296,6 @@
     return {res, text, json, url: u.toString()};
   }
 
-  function render(rows){
-    const tb = $('tbody');
-    if (!rows.length){
-      tb.innerHTML = `<tr><td colspan="9" style="color:var(--muted);">Geen spelers…</td></tr>`;
-      return;
-    }
-
-    tb.innerHTML = rows.map((r,i)=>{
-      const holeCell = (r.holeNow === 'KLAAR')
-        ? `<span class="done">KLAAR</span>`
-        : r.holeNow;
-
-      const nameHtml = r._editing
-        ? `
-          <span class="nameEdit">
-            <input class="nameInput" value="${escapeHtml(r.editValue)}" data-pid="${escapeHtml(r.player_id)}" />
-            <button class="saveBtn" data-act="save" data-pid="${escapeHtml(r.player_id)}">Opslaan</button>
-            <button class="cancelBtn" data-act="cancel" data-pid="${escapeHtml(r.player_id)}">Annuleer</button>
-          </span>
-        `
-        : `<span class="name" data-act="edit" data-pid="${escapeHtml(r.player_id)}">${escapeHtml(r.name)}</span>
-           <span class="pid">(${escapeHtml(r.player_id)})</span>`;
-
-      return `
-        <tr>
-          <td class="rank">${i+1}</td>
-          <td>${nameHtml}</td>
-          <td class="right bigPoints">${r.points}</td>
-          <td class="right">${holeCell}</td>
-          <td class="right">${r.totalHoles}</td>
-          <td class="right">${escapeHtml(r.hcp)}</td>
-          <td class="right">${escapeHtml(r.playing_hcp)}</td>
-          <td class="right">${r.avgPerHole}</td>
-          <td class="right">${r.timeOnHole}</td>
-        </tr>
-      `;
-    }).join('');
-
-    // bind edit/save/cancel
-    tb.querySelectorAll('[data-act]').forEach(el=>{
-      el.addEventListener('click', (ev)=>{
-        const act = el.getAttribute('data-act');
-        const pid = el.getAttribute('data-pid');
-        if (!pid) return;
-
-        if (act === 'edit') beginEdit(pid);
-        if (act === 'save') saveEdit(pid);
-        if (act === 'cancel') cancelEdit(pid);
-      });
-    });
-  }
-
-  function escapeHtml(s){
-    return String(s??'')
-      .replaceAll('&','&amp;')
-      .replaceAll('<','&lt;')
-      .replaceAll('>','&gt;')
-      .replaceAll('"','&quot;')
-      .replaceAll("'",'&#39;');
-  }
-
   // In-memory edit state
   let lastRows = [];
   function beginEdit(pid){
@@ -389,7 +304,6 @@
       return {...r, _editing:true, editValue: (getAlias(pid) || r.liveName || '') };
     });
     render(lastRows);
-    // focus input
     setTimeout(()=>{
       const inp = document.querySelector(`input.nameInput[data-pid="${CSS.escape(pid)}"]`);
       if (inp){ inp.focus(); inp.select(); }
@@ -399,22 +313,123 @@
     const inp = document.querySelector(`input.nameInput[data-pid="${CSS.escape(pid)}"]`);
     const v = inp ? inp.value : '';
     setAlias(pid, v);
-    lastRows = lastRows.map(r => {
-      if (r.player_id !== pid) return {...r, _editing:false};
-      return {...r, _editing:false};
-    });
-    // refresh names immediately
+    lastRows = lastRows.map(r => r.player_id === pid ? {...r, _editing:false} : {...r, _editing:false});
     lastRows = lastRows.map(r=>{
       if (r.player_id !== pid) return r;
       const a = getAlias(pid);
-      const newName = a || r.liveName || r.player_id;
-      return {...r, name:newName};
+      return {...r, name: a || r.liveName || r.player_id};
     });
     render(lastRows);
   }
-  function cancelEdit(pid){
-    lastRows = lastRows.map(r => ({...r, _editing:false}));
-    render(lastRows);
+  function cancelEdit(){ lastRows = lastRows.map(r => ({...r, _editing:false})); render(lastRows); }
+
+  function render(rows){
+    const tb = $('tbody');
+    if (!rows.length){
+      tb.innerHTML = `<tr><td colspan="7" style="color:var(--muted);">Geen spelers…</td></tr>`;
+      return;
+    }
+
+    tb.innerHTML = rows.map((r,i)=>{
+      const cls = r.checkedIn ? 'green' : 'red';
+
+      const holeCell = (r.holeNow === 'KLAAR')
+        ? `<span class="done">KLAAR</span>`
+        : r.holeNow;
+
+      const nameHtml = r._editing
+        ? `
+          <span class="nameEdit">
+            <input class="nameInput" value="${escapeHtml(r.editValue)}" data-pid="${escapeHtml(r.player_id)}" />
+            <button class="saveBtn" data-act="save" data-pid="${escapeHtml(r.player_id)}">Opslaan</button>
+            <button class="cancelBtn" data-act="cancel">Annuleer</button>
+          </span>
+        `
+        : `
+          <span class="name ${cls}" data-act="edit" data-pid="${escapeHtml(r.player_id)}">${escapeHtml(r.name)}</span>
+          <span class="pid">(${escapeHtml(r.player_id)})</span>
+        `;
+
+      return `
+        <tr>
+          <td class="rank">${i+1}</td>
+          <td>
+            <span class="nameTag">${nameHtml}</span>
+          </td>
+          <td class="right bigPoints">${r.points}</td>
+          <td class="right">${holeCell}</td>
+          <td class="right">${r.totalHoles}</td>
+          <td class="right">${escapeHtml(r.hcp)}</td>
+          <td class="right">${escapeHtml(r.playing_hcp)}</td>
+        </tr>
+      `;
+    }).join('');
+
+    tb.querySelectorAll('[data-act]').forEach(el=>{
+      el.addEventListener('click', ()=>{
+        const act = el.getAttribute('data-act');
+        const pid = el.getAttribute('data-pid');
+        if (act === 'edit' && pid) beginEdit(pid);
+        if (act === 'save' && pid) saveEdit(pid);
+        if (act === 'cancel') cancelEdit();
+      });
+    });
+  }
+
+  function computeRows(round, players, scoreboard, liveNames){
+    // pid -> totals from STABLEFORD (may be empty at start)
+    const sById = {};
+    for (const s of scoreboard){
+      const pid = String(s.player_id||'').trim();
+      if (!pid) continue;
+      sById[pid] = {
+        total_points: Number(s.total_points || 0),
+        thru: Number(s.thru || 0)
+      };
+    }
+
+    const rows = players.map(p=>{
+      const pid = String(p.player_id||'').trim();
+      const totalHoles = Number(p.holes || round.holes || 18) || 18;
+
+      const stable = sById[pid] || { total_points: 0, thru: 0 };
+      const points = Number(stable.total_points || 0);
+      const completed = Number(stable.thru || 0);
+
+      const holeNow = (completed >= totalHoles) ? 'KLAAR' : String(completed + 1);
+
+      const liveName = (liveNames && liveNames[pid]) ? String(liveNames[pid]).trim() : '';
+      const alias = getAlias(pid);
+      const name = alias || liveName || pid;
+
+      const checkedIn =
+        String(p.checked_in || '').toUpperCase() === 'TRUE' ||
+        String(p.checked_in || '').toUpperCase() === 'YES' ||
+        (!!p.checkin_time && String(p.checkin_time).trim() !== '');
+
+      return {
+        player_id: pid,
+        name,
+        liveName,
+        checkedIn,
+        points,
+        holeNow,
+        totalHoles,
+        hcp: (p.hcp ?? '—'),
+        playing_hcp: (p.playing_hcp ?? '—'),
+        _editing:false,
+        editValue:''
+      };
+    });
+
+    // Sort: highest points first; ties => checked-in first; then pid
+    rows.sort((a,b)=>{
+      if (b.points !== a.points) return b.points - a.points;
+      if ((b.checkedIn?1:0) !== (a.checkedIn?1:0)) return (b.checkedIn?1:0) - (a.checkedIn?1:0);
+      return a.player_id.localeCompare(b.player_id);
+    });
+
+    return rows;
   }
 
   // Timer
@@ -432,120 +447,32 @@
 
   function applyEvent(){
     const v = $('eventInput').value.trim();
-    if (!v){
-      setStatus('Event code is leeg.');
-      return;
-    }
+    if (!v){ setStatus('Event code is leeg.'); return; }
     eventCode = v;
     $('chipEvent').textContent = 'event: ' + eventCode;
     applyRefresh();
   }
 
-  function computeRows(round, players, scoreboard, liveNames){
-    const now = Date.now();
-
-    // pid -> stable totals (may be empty before first score)
-    const sById = {};
-    for (const s of scoreboard){
-      const pid = String(s.player_id||'').trim();
-      if (!pid) continue;
-      sById[pid] = {
-        total_points: Number(s.total_points || 0),
-        thru: Number(s.thru || 0),
-        last_update_ts: String(s.last_update_ts || s.updated_at || '')
-      };
-    }
-
-    const rows = players.map(p=>{
-      const pid = String(p.player_id||'').trim();
-      const totalHoles = Number(p.holes || round.holes || 18) || 18;
-
-      const stable = sById[pid] || { total_points: 0, thru: 0, last_update_ts: '' };
-      const points = Number(stable.total_points || 0);
-      const completed = Number(stable.thru || 0);
-      const holeNow = (completed >= totalHoles) ? 'KLAAR' : String(completed + 1);
-
-      // live name from server (set via check-in/submit), but alias overrides it
-      const liveName = (liveNames && liveNames[pid]) ? String(liveNames[pid]).trim() : '';
-      const alias = getAlias(pid);
-      const name = alias || liveName || pid;
-
-      // timing
-      const checkin = parseIso(p.checkin_time) || null;
-      const lastUpd = parseIso(stable.last_update_ts) || null;
-
-      // avg time/hole: (now - checkin) / max(1, completed)
-      let avg = '—';
-      if (checkin){
-        const denom = Math.max(1, completed); // if 0 scored yet, show avg since checkin as 0-hole avg? we keep denom 1.
-        avg = fmtMins((now - checkin) / denom);
-      }
-
-      // time on current hole:
-      // if has last_update_ts -> since last score submit
-      // else if checkin -> since checkin
-      let onHole = '—';
-      if (completed >= totalHoles){
-        onHole = '—';
-      } else if (lastUpd){
-        onHole = fmtMins(now - lastUpd);
-      } else if (checkin){
-        onHole = fmtMins(now - checkin);
-      }
-
-      return {
-        player_id: pid,
-        name,
-        liveName,
-        points,
-        holeNow,
-        totalHoles,
-        hcp: (p.hcp ?? '—'),
-        playing_hcp: (p.playing_hcp ?? '—'),
-        avgPerHole: avg,
-        timeOnHole: onHole,
-        _editing: false,
-        editValue: ''
-      };
-    });
-
-    // Sort: highest points on top, then lowest hole number? (optional) then pid
-    rows.sort((a,b)=>{
-      if (b.points !== a.points) return b.points - a.points;
-      // if tied: player further (later hole) on top (optional). remove if you don't want it.
-      const aH = (a.holeNow === 'KLAAR') ? 999 : Number(a.holeNow);
-      const bH = (b.holeNow === 'KLAAR') ? 999 : Number(b.holeNow);
-      if (bH !== aH) return bH - aH;
-      return a.player_id.localeCompare(b.player_id);
-    });
-
-    return rows;
-  }
-
   async function refreshNow(){
     try{
+      $('chipTime').textContent = 'tijd: ' + new Date().toLocaleTimeString();
+
       if (!api){
         $('chipApi').textContent = 'api: ONTBREEKT';
-        $('chipApi').className = 'chip bad';
-        setStatus('❌ API ontbreekt in de URL. Open het scoreboard via de admin-link (die bevat ?api=...).');
+        setStatus('❌ API ontbreekt in de URL. Open via admin-link met ?api=...');
         return;
       }
-
       $('chipApi').textContent = 'api: OK';
-      $('chipApi').className = 'chip ok';
 
       if (!eventCode){
         setStatus('Vul event code in.');
         return;
       }
-
       $('chipEvent').textContent = 'event: ' + eventCode;
 
       const r = await apiGet({ action:'roundState', event_code: eventCode });
-      $('chipTime').textContent = 'tijd: ' + new Date().toLocaleTimeString();
 
       if (!r.json || !r.json.ok){
-        $('chipTime').className = 'chip bad';
         setStatus('❌ roundState fout.\n\nGET:\n' + r.url + '\n\nResponse:\n' + (r.text || '—'));
         return;
       }
@@ -555,13 +482,12 @@
       const scoreboard = Array.isArray(r.json.scoreboard) ? r.json.scoreboard : [];
       const liveNames = r.json.live_names || {};
 
-      // IMPORTANT: ALWAYS render from players (even if scoreboard is empty)
+      // KEY: ALWAYS build rows from PLAYERS (not from scoreboard)
       const rows = computeRows(round, players, scoreboard, liveNames);
       lastRows = rows;
       render(rows);
 
       setStatus(`✅ OK • event=${eventCode} • spelers=${players.length} • refresh=${$('refreshSec').value}s`);
-
     }catch(e){
       setStatus('❌ Fout: ' + (e?.message || e));
     }
@@ -572,9 +498,8 @@
     $('eventInput').value = eventCode || '';
     $('chipEvent').textContent = 'event: ' + (eventCode || '—');
     $('chipApi').textContent = 'api: ' + (api ? 'OK' : 'ONTBREEKT');
-    $('chipApi').className = api ? 'chip ok' : 'chip bad';
+    $('chipTime').textContent = 'tijd: —';
 
-    // allow immediate run if event in url
     if (api && eventCode) applyRefresh();
     else refreshNow();
   })();
